@@ -12,11 +12,12 @@
 			<aside class="location">
 				<form class="location__search">
 					<label for="place">City Search</label>
-					<input class="location__form__input"
+					<input class="location__search__input"
 					       id="place"
 					       name="place"
 					       placeholder="City or Zip"
 					       type="text"/>
+					<button class="location__search__button" onclick="weather.locationSearch(this.previousElementSibling); return false;">Go</button>
 				</form>
 				<ul class="location__list"></ul>
 			</aside>
