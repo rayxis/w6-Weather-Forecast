@@ -12,7 +12,7 @@
 
 class Weather {
 	apis        = {
-		apiKey:      '815b81b4556e7f7c29099ba98f3991ab',
+		apiKey:      '',
 		forecast:    'https://api.openweathermap.org/data/2.5/forecast',
 		geocodeCity: 'http://api.openweathermap.org/geo/1.0/direct',
 		gecodeZip:   'http://api.openweathermap.org/geo/1.0/zip',
@@ -26,6 +26,7 @@ class Weather {
 	weatherData = {};
 
 	constructor() {
+		this.apis.apiKey = openWeatherMap.apiKey;
 		this.locationSearch().then(location => this.weatherSearch(location));
 	}
 
@@ -80,17 +81,24 @@ class Weather {
 	}
 
 	buildDay(day) {
+		//  Clone the Day Card element
 		const dayCard = this.templates.dayCard.cloneNode(true);
 
+		//  Set the location, date and day.
 		dayCard.querySelector('.dayCard__header__location').textContent = this.location.name;
 		dayCard.querySelector('.dayCard__header__date').textContent     = day[0].dateData.format('MMMM DD');
 		dayCard.querySelector('.dayCard__header__day').textContent      = day[0].dateData.format('dddd');
 
+		//  Loop through each time block in the day, and populate the fields.
 		day.forEach(dayTime => {
-			const timeCard                                               = this.templates.timeCard.cloneNode(true);
+			//  Clone the Time Card element
+			const timeCard = this.templates.timeCard.cloneNode(true);
+
+			//  Set the time (format: 12am), current temperature, humidity, and wind speed/direction.
+			timeCard.querySelector('.timeCard__humidity').textContent    = dayTime.humidity;
+			timeCard.querySelector('.timeCard__pressure').textContent    = `${dayTime.pressure} hPa`;
 			timeCard.querySelector('.timeCard__time').textContent        = dayTime.dateData.format('ha');
 			timeCard.querySelector('.timeCard__temperature').textContent = dayTime.temp.current;
-			timeCard.querySelector('.timeCard__humidity').textContent    = dayTime.humidity;
 			timeCard.querySelector('.timeCard__wind').textContent        = `${dayTime.wind.speed} ${dayTime.wind.direction}`;
 
 			dayCard.querySelector('.dayCard').appendChild(timeCard);
