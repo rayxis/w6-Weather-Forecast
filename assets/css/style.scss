@@ -1,0 +1,79 @@
+* {
+	margin:     0;
+	padding:    0;
+	box-sizing: border-box;
+}
+
+body {
+	font-family: Poppins, sans-serif;
+	font-size:   88%;
+}
+
+main {
+	display: flex;
+	gap:     1em;
+}
+
+.location {
+
+}
+
+.weather {
+	display:         flex;
+	flex-flow:       row wrap;
+	justify-content: space-between;
+	gap:             10px;
+	width:           800px;
+}
+
+.dayCard {
+	display:          flex;
+	flex-flow:        column nowrap;
+	gap:              1rem;
+	padding:          0.5rem;
+	min-width:        19%;
+	box-sizing:       border-box;
+
+	background-image: linear-gradient(to bottom, #0000C8 0%, #000064 100%);
+	border:           1px solid rgba(0, 0, 0, 0.25);
+	border-radius:    5px;
+
+	color:            white;
+
+	&__header__location {display: none;}
+
+	&:first-of-type {
+		display:       flex;
+		flex-flow:     column wrap;
+		align-content: space-between;
+		width:         100%;
+		height:        300px;
+
+		.dayCard__header {
+			display:         flex;
+			flex-flow:       column nowrap;
+			justify-content: flex-end;
+			height:          100%;
+
+			&__location {
+				display:       block;
+				margin-bottom: auto;
+				font-size:     2.5rem;
+			}
+
+			&__date {font-size: 2rem;}
+
+			&__day {font-size: 1.5rem;}
+		}
+	}
+
+	&__header {
+		&__date {
+			font-weight: bold;
+		}
+	}
+}
+
+.timeCard {
+	list-style: none;
+}

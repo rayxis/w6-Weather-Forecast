@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta content='width=device-width, initial-scale=1' name='viewport'/>
+		<title>Weather Forecast</title>
+		<link rel="stylesheet" href="./assets/css/style.css"/>
+	</head>
+	<body>
+		<header></header>
+		<main>
+			<aside class="location">
+				<form class="location__search">
+					<label for="place">City Search</label>
+					<input class="location__form__input"
+					       id="place"
+					       name="place"
+					       placeholder="City or Zip"
+					       type="text"/>
+				</form>
+				<ul class="location__list"></ul>
+			</aside>
+			<section class="weather">
+
+			</section>
+		</main>
+
+		<template id="dayCard">
+			<div class="dayCard">
+				<header class="dayCard__header">
+					<h2 class="dayCard__header__location"></h2>
+					<h3 class="dayCard__header__date"></h3>
+					<h4 class="dayCard__header__day"></h4>
+				</header>
+			</div>
+		</template>
+
+		<template id="timeCard">
+			<ul class="timeCard">
+				<li class="timeCard__date"></li>
+				<li class="timeCard__day"></li>
+				<li class="timeCard__time"></li>
+				<li class="timeCard__temperature"></li>
+				<li class="timeCard__wind"></li>
+				<li class="timeCard__humidity"></li>
+			</ul>
+		</template>
+		<template id="locationPlace">
+			<li class="locationPlace"></li>
+		</template>
+		<script src="https://cdn.jsdelivr.net/npm/dayjs@1.11/dayjs.min.js" integrity="sha256-nP25Pzivzy0Har7NZtMr/TODzfGWdlTrwmomYF2vQXM=" crossorigin="anonymous"></script>
+		<script src="./assets/js/script.js"></script>
+	</body>
+</html>
