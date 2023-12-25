@@ -30,7 +30,7 @@ class Weather {
 	};
 	elements  = {
 		locationList: document.querySelector('.location__list'),
-		weatherList: document.querySelector('.weather')
+		weatherList:  document.querySelector('.weather')
 	};
 	forecast  = {};
 	locations = {test: 'hello'};
@@ -244,8 +244,10 @@ class Weather {
 		url.search = new URLSearchParams(urlSearch);
 
 		//  Search the cached locations for matches.
-		if (Object.keys(this.locations).length) {
-			locationData = Object.values(this.locations).find(cacheTest);
+		locationData = Object.values(this.locations).find(cacheTest);
+
+		//  If cached locationData was found, update the access time, update the list order, and fetch the forecast.
+		if (locationData) {
 			this.locationCache(locationData);
 			this.locationsUpdate();
 			this.forecastSearch(locationData);
@@ -320,7 +322,7 @@ class Weather {
 			const timeCard = this.templates.timeCard.cloneNode(true);
 
 			//  Set the time (format: 12am), current temperature, humidity, and wind speed/direction.
-			timeCard.querySelector('.timeCard__time').textContent     = dayTime.dateData.format('ha');
+			timeCard.querySelector('.timeCard__time').textContent           = dayTime.dateData.format('ha');
 			timeCard.querySelector('.timeCard__humidity__data').textContent = dayTime.humidity;
 			timeCard.querySelector('.timeCard__pressure__data').textContent = dayTime.pressure;
 			timeCard.querySelector('.timeCard__temp__data').textContent     = dayTime.temp.current;
