@@ -4,7 +4,6 @@
  TODO:
 	 - Location
 	    - Get the user's current location.
-	    - Sort the locations by last accessed.
 	    - Better testing for search types (include more than just the US)
 	    - Popup for search results
 	 - Weather
@@ -121,12 +120,12 @@ class Weather {
 		if (!this.forecast.hasOwnProperty(forecastKey) || this.forecast[forecastKey].cacheUntil < Date.now()) {
 			try {
 				//  Grab the URL and set the parameters.
-				let url            = this.apis.forecast;
-				url.search         = new URLSearchParams({
-					                                         lat:   location.lat,
-					                                         lon:   location.lon,
-					                                         appid: this.settings.apiKey
-				                                         });
+				let url    = this.apis.forecast;
+				url.search = new URLSearchParams({
+					                                 lat:   location.lat,
+					                                 lon:   location.lon,
+					                                 appid: this.settings.apiKey
+				                                 });
 				//  Pull the forecast request from OpenWeatherMap.
 				await this.fetchJSON(url.href, (forecastData) => {
 					this.forecastCache(forecastData);
@@ -148,6 +147,7 @@ class Weather {
 	locationCache(location) {
 		//  Codify the object key as a concatenation of latitude and longitude to make it unique,
 		//  save the location, and then cache the results.
+		location.lastAccess                   = Date.now();
 		this.locations[this.keyGet(location)] = location;
 		localStorage.setItem('locationData', JSON.stringify(this.locations));
 	}
@@ -165,6 +165,7 @@ class Weather {
 
 		//  Figure out the search type.
 		//  TODO: Fix city search; maybe regex?
+		//  TODO: Add error handling to the tests as well.
 		if (isNaN(search) && comma === -1) {
 			// If the search box contains text, assume it's a city.
 			url             = this.apis.geocodeCity;
@@ -200,6 +201,8 @@ class Weather {
 		//  Search the cached locations for matches.
 		if (Object.keys(this.locations).length) {
 			locationData = Object.values(this.locations).find(cacheTest);
+			this.locationCache(locationData);
+			this.locationsUpdate();
 			this.forecastSearch(locationData);
 		}
 		// If cached location doesn't exist, search the API for it.
@@ -208,6 +211,8 @@ class Weather {
 				//  Pull the location data from OpenWeatherMap.
 				//  TODO: Better error handling.
 				await this.fetchJSON(url.href, (locationData) => {
+					//  If the returned data has one of the required properties, assume it has what it needs.
+					//  Update the location's cache (update access time), the visible list, and get the forecast.
 					if (locationData.hasOwnProperty('lat')) {
 						this.locationCache(locationData);
 						this.locationsUpdate();
@@ -230,10 +235,15 @@ class Weather {
 			child.removeEventListener('click', this.actionLocationSearch);
 			child.remove();
 		});
+
+		//  Sort the locations in descending order from last access (this was updated in locationCache()).
+		const locationsSorted = Object.values(this.locations).sort((a, b) => b.lastAccess - a.lastAccess)
+
 		//  Loop through each saved location.
-		Object.values(this.locations).forEach(location => {
+		locationsSorted.forEach(location => {
 			//  Clone the location list item.
-			const locationPlace                         = this.templates.locationPlace.cloneNode(true);
+			const locationPlace = this.templates.locationPlace.cloneNode(true);
+
 			//  Fill In the location details, and add the event listener.
 			locationPlace.firstElementChild.textContent = location.name;
 			locationPlace.firstElementChild.locationRef = location;
@@ -271,6 +281,7 @@ class Weather {
 			timeCard.querySelector('.timeCard__temperature').textContent = dayTime.temp.current;
 			timeCard.querySelector('.timeCard__wind').textContent        = `${dayTime.wind.speed} ${dayTime.wind.direction}`;
 
+			//  Add the time card to the day card.
 			dayCard.querySelector('.dayCard').appendChild(timeCard);
 		});
 		//  Add day to the forecast
@@ -288,17 +299,18 @@ class Weather {
 
 			//  Rebuild each timeframe weather object.
 			const parsedData = {
-				dateData: day,
-				humidity: weather.main.humidity + '%',
-				pressure: weather.main.pressure,
-				temp:     {
+				dateData:   day,
+				humidity:   weather.main.humidity + '%',
+				pressure:   weather.main.pressure,
+				temp:       {
 					current:   this.convertTemp(weather.main.temp),
 					feelsLike: this.convertTemp(weather.main.feels_like),
 					max:       this.convertTemp(weather.main.temp_max),
 					min:       this.convertTemp(weather.main.temp_min)
 				},
-				weather:  weather.weather,
-				wind:     {
+				visibility: weather.visibility,
+				weather:    weather.weather,
+				wind:       {
 					speed:     weather.wind.speed + 'mph',
 					direction: this.convertDirection(weather.wind.deg)
 				}
@@ -310,7 +322,6 @@ class Weather {
 			forecast[dayKey].push(parsedData);
 		});
 
-		console.log(forecast);
 		//  Take everything day-by-day.
 		// Object.values(forecast).forEach(day => this.buildDay(day));
 	}
