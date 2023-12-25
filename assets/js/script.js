@@ -7,6 +7,7 @@
 	    - Better testing for search types (include more than just the US)
 	    - Popup for search results
 	 - Weather
+	     - Current weather?
 		 - Weather's return has extra items, which may be useful. Maybe not though.
      - Locale and language?
      - Design
@@ -21,13 +22,15 @@ let weather;
 
 class Weather {
 	apis      = {
+		current:       new URL('https://api.openweathermap.org/data/2.5/weather'),
 		forecast:      new URL('https://api.openweathermap.org/data/2.5/forecast'),
 		geocodeCity:   new URL('http://api.openweathermap.org/geo/1.0/direct'),
 		geocodeZip:    new URL('http://api.openweathermap.org/geo/1.0/zip'),
 		geocodeCoords: new URL('http://api.openweathermap.org/geo/1.0/reverse')
 	};
 	elements  = {
-		locationList: document.querySelector('.location__list')
+		locationList: document.querySelector('.location__list'),
+		weatherList: document.querySelector('.weather')
 	};
 	forecast  = {};
 	locations = {test: 'hello'};
@@ -100,6 +103,48 @@ class Weather {
 		return false;
 	}
 
+	forecastBuild(locationData) {
+		let forecast     = {};
+		let forecastData = this.forecast[this.keyGet(locationData)];
+
+		//  Parse through the returned weather data, rebuild the time/weather objects and put them into an array of days.
+		forecastData.list.forEach(weatherData => {
+			const day    = dayjs(new Date(weatherData.dt * 1000));
+			const dayKey = day.format('MMMDD');
+
+			//  Rebuild each timeframe weather object.
+			const parsedData = {
+				dateData:   day,
+				humidity:   weatherData.main.humidity + '%',
+				pressure:   weatherData.main.pressure + 'hPa',
+				temp:       {
+					current:   this.convertTemp(weatherData.main.temp),
+					feelsLike: this.convertTemp(weatherData.main.feels_like),
+					max:       this.convertTemp(weatherData.main.temp_max),
+					min:       this.convertTemp(weatherData.main.temp_min)
+				},
+				visibility: weatherData.visibility,
+				weather:    weatherData.weather,
+				wind:       {
+					speed:     weatherData.wind.speed + 'mph',
+					direction: this.convertDirection(weatherData.wind.deg)
+				}
+			}
+
+			//  If the forecast object doesn't have the current day as a property, create one with an empty array..
+			if (!forecast.hasOwnProperty(dayKey)) forecast[dayKey] = [];
+
+			//  Push the rebuilt weather object into the forecast day array.
+			forecast[dayKey].push(parsedData);
+		});
+
+		//  Clear the weather list.
+		[...this.elements.weatherList.children].forEach(child => child.remove());
+
+		//  Take everything day-by-day.
+		Object.values(forecast).forEach(day => this.buildDay(day));
+	}
+
 	//  Cache the location information. The information returned from the API will never change.
 	forecastCache(forecast) {
 		//  Create a cache expiration for the weather data.
@@ -136,7 +181,7 @@ class Weather {
 			}
 		}
 		//  Build the weekly forecast.
-		this.buildForecast(location);
+		this.forecastBuild(location);
 	}
 
 	keyGet(location) {
@@ -265,9 +310,9 @@ class Weather {
 		const dayCard = this.templates.dayCard.cloneNode(true);
 
 		//  Set the location, date and day.
-		dayCard.querySelector('.dayCard__header__location').textContent = this.location.name;
-		dayCard.querySelector('.dayCard__header__date').textContent     = day[0].dateData.format('MMMM DD');
-		dayCard.querySelector('.dayCard__header__day').textContent      = day[0].dateData.format('dddd');
+		// dayCard.querySelector('.dayCard__header__location').textContent = this.location.name;
+		dayCard.querySelector('.dayCard__header__date').textContent = day[0].dateData.format('MMMM DD');
+		dayCard.querySelector('.dayCard__header__day').textContent  = day[0].dateData.format('dddd');
 
 		//  Loop through each time block in the day, and populate the fields.
 		day.forEach(dayTime => {
@@ -275,55 +320,17 @@ class Weather {
 			const timeCard = this.templates.timeCard.cloneNode(true);
 
 			//  Set the time (format: 12am), current temperature, humidity, and wind speed/direction.
-			timeCard.querySelector('.timeCard__humidity').textContent    = dayTime.humidity;
-			timeCard.querySelector('.timeCard__pressure').textContent    = `${dayTime.pressure}hPa`;
-			timeCard.querySelector('.timeCard__time').textContent        = dayTime.dateData.format('ha');
-			timeCard.querySelector('.timeCard__temperature').textContent = dayTime.temp.current;
-			timeCard.querySelector('.timeCard__wind').textContent        = `${dayTime.wind.speed} ${dayTime.wind.direction}`;
+			timeCard.querySelector('.timeCard__time').textContent     = dayTime.dateData.format('ha');
+			timeCard.querySelector('.timeCard__humidity__data').textContent = dayTime.humidity;
+			timeCard.querySelector('.timeCard__pressure__data').textContent = dayTime.pressure;
+			timeCard.querySelector('.timeCard__temp__data').textContent     = dayTime.temp.current;
+			timeCard.querySelector('.timeCard__wind__data').textContent     = `${dayTime.wind.speed} ${dayTime.wind.direction}`;
 
 			//  Add the time card to the day card.
-			dayCard.querySelector('.dayCard').appendChild(timeCard);
+			dayCard.querySelector('.dayCard__weather').appendChild(timeCard);
 		});
 		//  Add day to the forecast
 		document.querySelector('.weather').appendChild(dayCard);
-	}
-
-	buildForecast(locationData) {
-		let forecast     = {};
-		let forecastData = this.forecast[this.keyGet(locationData)];
-
-		//  Parse through the returned weather data, rebuild the time/weather objects and put them into an array of days.
-		forecastData.list.forEach(weather => {
-			const day    = dayjs(new Date(weather.dt * 1000));
-			const dayKey = day.format('MMMDD');
-
-			//  Rebuild each timeframe weather object.
-			const parsedData = {
-				dateData:   day,
-				humidity:   weather.main.humidity + '%',
-				pressure:   weather.main.pressure,
-				temp:       {
-					current:   this.convertTemp(weather.main.temp),
-					feelsLike: this.convertTemp(weather.main.feels_like),
-					max:       this.convertTemp(weather.main.temp_max),
-					min:       this.convertTemp(weather.main.temp_min)
-				},
-				visibility: weather.visibility,
-				weather:    weather.weather,
-				wind:       {
-					speed:     weather.wind.speed + 'mph',
-					direction: this.convertDirection(weather.wind.deg)
-				}
-			}
-			//  If the forecast object doesn't have the current day as a property, create one with an empty array..
-			if (!forecast.hasOwnProperty(dayKey)) forecast[dayKey] = [];
-
-			//  Push the rebuilt weather object into the forecast day array.
-			forecast[dayKey].push(parsedData);
-		});
-
-		//  Take everything day-by-day.
-		// Object.values(forecast).forEach(day => this.buildDay(day));
 	}
 }
 
