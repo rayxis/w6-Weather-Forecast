@@ -11,13 +11,13 @@
 		<main>
 			<aside class="location">
 				<form class="location__search">
-					<label for="place">City Search</label>
+					<label class="location__search__label" for="place">City Search</label>
 					<input class="location__search__input"
 					       id="place"
 					       name="place"
 					       placeholder="City or Zip"
 					       type="text"/>
-					<button class="location__search__button" onclick="weather.locationSearch(this.previousElementSibling); return false;">Go</button>
+					<button class="location__search__button" onclick="weather.userLocationSearch(this.previousElementSibling); return false;">Go</button>
 				</form>
 				<ul class="location__list"></ul>
 			</aside>
@@ -48,7 +48,7 @@
 			</ul>
 		</template>
 		<template id="locationPlace">
-			<li class="locationPlace"></li>
+			<li class="location__list__place"></li>
 		</template>
 		<script src="https://cdn.jsdelivr.net/npm/dayjs@1.11/dayjs.min.js" integrity="sha256-nP25Pzivzy0Har7NZtMr/TODzfGWdlTrwmomYF2vQXM=" crossorigin="anonymous"></script>
 		<script src="./assets/js/secret.js"></script>

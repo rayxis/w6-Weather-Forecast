@@ -4,7 +4,7 @@
  TODO:
 	 - Location
 	    - Get the user's current location.
-	    - Show previously searched locations.
+	    - Sort the locations by last accessed.
 	    - Better testing for search types (include more than just the US)
 	    - Popup for search results
 	 - Weather
@@ -17,8 +17,8 @@
         - Weather Section
         - Set background of card to reflect weather conditions.
         - Find some icons to reflect the weather conditions.
-***/
-
+ ***/
+let weather;
 
 class Weather {
 	apis      = {
@@ -26,6 +26,9 @@ class Weather {
 		geocodeCity:   new URL('http://api.openweathermap.org/geo/1.0/direct'),
 		geocodeZip:    new URL('http://api.openweathermap.org/geo/1.0/zip'),
 		geocodeCoords: new URL('http://api.openweathermap.org/geo/1.0/reverse')
+	};
+	elements  = {
+		locationList: document.querySelector('.location__list')
 	};
 	forecast  = {};
 	locations = {test: 'hello'};
@@ -36,13 +39,23 @@ class Weather {
 		units:           'F'
 	};
 	templates = {
-		dayCard:  document.getElementById('dayCard').content,
-		timeCard: document.getElementById('timeCard').content
+		dayCard:       document.getElementById('dayCard').content,
+		locationPlace: document.getElementById('locationPlace').content,
+		timeCard:      document.getElementById('timeCard').content
 	};
 
 	constructor() {
+		// Save class to external variable so that it can be referenced from event listeners created within the class.
+		weather = this;
+
 		this.settings.apiKey = openWeatherMap.apiKey;
 		this.locations       = JSON.parse(localStorage.getItem('locationData')) ?? {};
+		this.forecast        = JSON.parse(localStorage.getItem('forecastData')) ?? {};
+		this.locationsUpdate();
+	}
+
+	actionLocationSearch(event) {
+		weather.locationSearch(`${event.target.locationRef.lat},${event.target.locationRef.lon}`);
 	}
 
 	convertDirection(deg) {
@@ -63,18 +76,6 @@ class Weather {
 		return `${temp.toFixed(2)}°${this.settings.units}`;
 	}
 
-	cacheForecast() {
-		// localStorage.setItem('forecastData', JSON.stringify(this.locations));
-	}
-
-	//  Cache the location information. The information returned from the API will never change.
-	cacheLocation(location) {
-		//  Codify the object key as a concatenation of latitude and longitude to make it unique,
-		//  save the location, and then cache the results.
-		this.locations[`${location.lat}${location.lon}`] = location;
-		localStorage.setItem('locationData', JSON.stringify(this.locations));
-	}
-
 	dayAdd(day) {
 		const dayCard = this.templates.dayCard.cloneNode(true);
 
@@ -89,16 +90,81 @@ class Weather {
 		document.querySelector('.weather').appendChild(dayCard);
 	}
 
-	async locationSearch(searchBox) {
-		const search  = searchBox.value.trim();
-		const comma   = search.indexOf(',');
-		let cacheTest, locationData, url;
-		let urlSearch = {appid: this.settings.apiKey};
+	async fetchJSON(url, cb = undefined) {
+		const forecastData = await fetch(url).then(
+			response => {
+				//  TODO: Better error handling.
+				if (!response.ok) throw new Error('Network error');
+				else if (!cb) return response.json();
+				else return response.json().then(response => cb(response));
+			});
+		return false;
+	}
+
+	//  Cache the location information. The information returned from the API will never change.
+	forecastCache(forecast) {
+		//  Create a cache expiration for the weather data.
+		forecast.cacheUntil = Date.now() + this.settings.cacheExpiration;
+		//  Codify the object key as a concatenation of latitude and longitude to make it unique,
+		//  save the location, and then cache the results.
+		this.forecast[this.keyGet(forecast.city.coord)] = forecast;
+		localStorage.setItem('forecastData', JSON.stringify(this.forecast));
+	}
+
+	async forecastSearch(location) {
+		//  If the location's latitude or longitude aren't specified, abort.
+		if (location.lat === undefined || location.lon === undefined) return false;
+
+		//  Convert the key index.
+		const forecastKey = this.keyGet(location);
+
+		if (!this.forecast.hasOwnProperty(forecastKey) || this.forecast[forecastKey].cacheUntil < Date.now()) {
+			try {
+				//  Grab the URL and set the parameters.
+				let url            = this.apis.forecast;
+				url.search         = new URLSearchParams({
+					                                         lat:   location.lat,
+					                                         lon:   location.lon,
+					                                         appid: this.settings.apiKey
+				                                         });
+				//  Pull the forecast request from OpenWeatherMap.
+				await this.fetchJSON(url.href, (forecastData) => {
+					this.forecastCache(forecastData);
+					return forecastData;
+				});
+			} catch (error) {
+				console.log('Error:', error.message);
+			}
+		}
+		//  Build the weekly forecast.
+		this.buildForecast(location);
+	}
+
+	keyGet(location) {
+		return `${location.lat}${location.lon}`;
+	}
+
+	//  Cache the location information. The information returned from the API will never change.
+	locationCache(location) {
+		//  Codify the object key as a concatenation of latitude and longitude to make it unique,
+		//  save the location, and then cache the results.
+		this.locations[this.keyGet(location)] = location;
+		localStorage.setItem('locationData', JSON.stringify(this.locations));
+	}
+
+	async locationSearch(search) {
+		//  Trim any leading/following whitespace characters.
+		search = search.trim();
+
+		const comma   = search.indexOf(',');                //  Comma location, if there is one.
+		let cacheTest, locationData, url;                            //  Initialize variables
+		let urlSearch = {appid: this.settings.apiKey}; // Start with the API key.
 
 		//  If the search box is empty, abort.
 		if (!search.length) return false;
 
 		//  Figure out the search type.
+		//  TODO: Fix city search; maybe regex?
 		if (isNaN(search) && comma === -1) {
 			// If the search box contains text, assume it's a city.
 			url             = this.apis.geocodeCity;
@@ -122,8 +188,8 @@ class Weather {
 			urlSearch.limit = this.settings.geoLimit;
 
 			//  Cache search test for latitude and longitude.
-			cacheTest = loc => loc.lat === urlSearch.lat &&
-			                   loc.lon === urlSearch.lon;
+			cacheTest = loc => loc.lat === parseFloat(urlSearch.lat) &&
+			                   loc.lon === parseFloat(urlSearch.lon);
 
 			// If the search box contains an unknown type, abort.
 		} else return false;
@@ -132,51 +198,56 @@ class Weather {
 		url.search = new URLSearchParams(urlSearch);
 
 		//  Search the cached locations for matches.
-		if (Object.keys(this.locations).length) locationData = Object.values(this.locations).find(cacheTest);
-
-		//  If cached location doesn't exist, search the API for it.
+		if (Object.keys(this.locations).length) {
+			locationData = Object.values(this.locations).find(cacheTest);
+			this.forecastSearch(locationData);
+		}
+		// If cached location doesn't exist, search the API for it.
 		if (!locationData) {
 			try {
 				//  Pull the location data from OpenWeatherMap.
-				//  TODO: Add error handling to this.
-				await fetch(url.href).then(response => response.json().then(
-					// Cache the location data
-					locationData => this.cacheLocation(locationData)));
-			} catch (error) {
-
-			}
-		}
-
-		//  TODO: Now run locationData through the weatherSearch().
-		// this.weatherSearch(locationData);
-		return true;
-	}
-
-	async weatherSearch(location) {
-		if (!location.forecast || location.forecast.cacheUntil > Date.now()) {
-			try {
-				//  Grab the URL and set the parameters.
-				let url    = this.apis.forecast;
-				url.search = new URLSearchParams({
-					                                 lat:   location.lat,
-					                                 lon:   location.lon,
-					                                 appid: this.settings.apiKey
-				                                 });
-
-				//  Pull the forecast request from OpenWeatherMap.
-				//  TODO: Add error handling to this.
-				await fetch(url).then(response => {
-					//  Save the response to save API pulls, and set a cache timeout.
-					location.forecast            = response.json();
-					location.forecast.cacheUntil = Date.now() + this.settings.cacheExpiration;
-					//  Cache the result.
-					this.cache();
+				//  TODO: Better error handling.
+				await this.fetchJSON(url.href, (locationData) => {
+					if (locationData.hasOwnProperty('lat')) {
+						this.locationCache(locationData);
+						this.locationsUpdate();
+						this.forecastSearch(locationData);
+					}
 				});
 			} catch (error) {
-
+				console.log('Error:', error.message);
 			}
 		}
-		this.buildForecast(location);
+
+		//  Update city list
+		return locationData;
+	}
+
+	//  Update the lcoations list.
+	locationsUpdate() {
+		//  Remove event handlers from all the children, and clear the list.
+		[...this.elements.locationList.children].forEach(child => {
+			child.removeEventListener('click', this.actionLocationSearch);
+			child.remove();
+		});
+		//  Loop through each saved location.
+		Object.values(this.locations).forEach(location => {
+			//  Clone the location list item.
+			const locationPlace                         = this.templates.locationPlace.cloneNode(true);
+			//  Fill In the location details, and add the event listener.
+			locationPlace.firstElementChild.textContent = location.name;
+			locationPlace.firstElementChild.locationRef = location;
+			locationPlace.firstElementChild.addEventListener('click', this.actionLocationSearch);
+
+			//  Add the child to the list.
+			this.elements.locationList.appendChild(locationPlace);
+		});
+	}
+
+	//  User function to invoke locationSearch, with proper data format.
+	userLocationSearch(searchBox) {
+		//  Search for the specified location.
+		this.locationSearch(searchBox.value);
 	}
 
 	buildDay(day) {
@@ -195,8 +266,7 @@ class Weather {
 
 			//  Set the time (format: 12am), current temperature, humidity, and wind speed/direction.
 			timeCard.querySelector('.timeCard__humidity').textContent    = dayTime.humidity;
-			timeCard.querySelector('.timeCard__pressure').textContent    = `${dayTime.pressure}
-				hPa`;
+			timeCard.querySelector('.timeCard__pressure').textContent    = `${dayTime.pressure}hPa`;
 			timeCard.querySelector('.timeCard__time').textContent        = dayTime.dateData.format('ha');
 			timeCard.querySelector('.timeCard__temperature').textContent = dayTime.temp.current;
 			timeCard.querySelector('.timeCard__wind').textContent        = `${dayTime.wind.speed} ${dayTime.wind.direction}`;
@@ -209,7 +279,7 @@ class Weather {
 
 	buildForecast(locationData) {
 		let forecast     = {};
-		let forecastData = locationData.forecast;
+		let forecastData = this.forecast[this.keyGet(locationData)];
 
 		//  Parse through the returned weather data, rebuild the time/weather objects and put them into an array of days.
 		forecastData.list.forEach(weather => {
@@ -233,14 +303,17 @@ class Weather {
 					direction: this.convertDirection(weather.wind.deg)
 				}
 			}
+			//  If the forecast object doesn't have the current day as a property, create one with an empty array..
 			if (!forecast.hasOwnProperty(dayKey)) forecast[dayKey] = [];
 
+			//  Push the rebuilt weather object into the forecast day array.
 			forecast[dayKey].push(parsedData);
 		});
 
+		console.log(forecast);
 		//  Take everything day-by-day.
-		Object.values(forecast).forEach(day => this.buildDay(day));
+		// Object.values(forecast).forEach(day => this.buildDay(day));
 	}
 }
 
-const weather = new Weather();
+new Weather();
