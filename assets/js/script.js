@@ -387,7 +387,6 @@ class Weather {
 		// Sort through the locations in descending order, and then loop through them to build the list.
 		this.data.location.sort((a, b) => b.lastAccess - a.lastAccess);
 		this.data.location.forEach(location => this.elements.locationList.appendChild(listItemBuild(location)));
-
 	}
 
 	async locationLookup(searchData) {
