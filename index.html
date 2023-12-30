@@ -7,21 +7,40 @@
 		<link rel="stylesheet" href="./assets/css/style.css"/>
 	</head>
 	<body>
-		<header></header>
-		<main>
+		<header>
+			<h1>Weather Forecast</h1>
 			<aside class="location">
 				<form class="location__search">
-					<label class="location__search__label" for="place">City Search</label>
-					<input class="location__search__input"
-					       id="place"
-					       name="place"
-					       placeholder="City or Zip"
-					       type="text"/>
-					<button class="location__search__button" onclick="weather.userLocationSearch(this.previousElementSibling); return false;">Go</button>
+					<fieldset class="location__search-container">
+						<input class="location__search__input"
+						       id="place"
+						       name="place"
+						       placeholder="Enter a location"
+						       type="text"/>
+						<label class="location__search__label" for="place">City, State, Country, Zip or Lat/Lon</label>
+						<ul class="location__listOptions"></ul>
+					</fieldset>
+					<button class="location__search__button">Go</button>
 				</form>
 				<ul class="location__list"></ul>
 			</aside>
-			<section class="weather"></section>
+		</header>
+		<main>
+			<section class="weather">
+				<div class="weather__location"></div>
+				<div class="weather__conditions">
+					<div class="weather__conditions__temp hideEmpty"></div>
+					<div class="weather__conditions__feelsLike hideEmpty"></div>
+					<div class="weather__conditions__max hideEmpty"></div>
+					<div class="weather__conditions__min hideEmpty"></div>
+					<div class="weather__conditions__humidity hideEmpty"></div>
+					<div class="weather__conditions__wind hideEmpty"></div>
+					<div class="weather__conditions__pressure hideEmpty"></div>
+					<div class="weather__conditions__visibility hideEmpty"></div>
+				</div>
+				<div class="weather__time"></div>
+			</section>
+			<section class="forecast"></section>
 		</main>
 		<footer></footer>
 
@@ -36,6 +55,14 @@
 
 				</div>
 			</div>
+		</template>
+
+		<template id="locationListOptions">
+			<li class="location__listOptions__option">
+				<span class="location__listOptions__option__city"></span>
+				<span class="location__listOptions__option__stco"></span>
+				<span class="location__listOptions__option__coords"></span>
+			</li>
 		</template>
 
 		<template id="timeCard">
@@ -61,10 +88,16 @@
 				</li>
 			</ul>
 		</template>
-		<template id="locationPlace">
-			<li class="location__list__place"></li>
+		<template id="locationItem">
+			<li class="location__list__item">
+				<span class="location__list__item__city"></span>
+				<span class="location__list__item__stco"></span>
+				<span class="location__list__item__coords"></span>
+			</li>
 		</template>
-		<script src="https://cdn.jsdelivr.net/npm/dayjs@1.11/dayjs.min.js" integrity="sha256-nP25Pzivzy0Har7NZtMr/TODzfGWdlTrwmomYF2vQXM=" crossorigin="anonymous"></script>
+
+		<script src="https://cdn.jsdelivr.net/npm/dayjs@1.11/dayjs.min.js"
+		        integrity="sha256-nP25Pzivzy0Har7NZtMr/TODzfGWdlTrwmomYF2vQXM=" crossorigin="anonymous"></script>
 		<script src="./assets/js/secret.js"></script>
 		<script src="./assets/js/script.js"></script>
 	</body>
