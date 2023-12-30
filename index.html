@@ -25,27 +25,25 @@
 				<ul class="location__list"></ul>
 			</aside>
 		</header>
-		<main>
-			<section class="weather">
-				<div class="weather__location"></div>
-				<div class="weather__conditions">
-					<div class="weather__conditions__temp hideEmpty"></div>
-					<div class="weather__conditions__feelsLike hideEmpty"></div>
-					<div class="weather__conditions__max hideEmpty"></div>
-					<div class="weather__conditions__min hideEmpty"></div>
-					<div class="weather__conditions__humidity hideEmpty"></div>
-					<div class="weather__conditions__wind hideEmpty"></div>
-					<div class="weather__conditions__pressure hideEmpty"></div>
-					<div class="weather__conditions__visibility hideEmpty"></div>
+		<main class="forecast">
+			<section class="forecast__card weather">
+				<div class="weather__current">
+					<div class="weather__current__location"></div>
+					<div class="weather__current__temp hideEmpty"></div>
+					<div class="weather__current__feelsLike hideEmpty"></div>
+					<div class="weather__current__max hideEmpty"></div>
+					<div class="weather__current__min hideEmpty"></div>
+					<div class="weather__current__humidity hideEmpty"></div>
+					<div class="weather__current__wind hideEmpty"></div>
+					<div class="weather__current__pressure hideEmpty"></div>
+					<div class="weather__current__visibility hideEmpty"></div>
 				</div>
-				<div class="weather__time"></div>
 			</section>
-			<section class="forecast"></section>
 		</main>
 		<footer></footer>
 
 		<template id="dayCard">
-			<div class="dayCard">
+			<section class="forecast__card dayCard">
 				<header class="dayCard__header">
 					<h2 class="dayCard__header__location"></h2>
 					<h3 class="dayCard__header__date"></h3>
@@ -54,7 +52,7 @@
 				<div class="dayCard__weather">
 
 				</div>
-			</div>
+			</section>
 		</template>
 
 		<template id="locationListOptions">

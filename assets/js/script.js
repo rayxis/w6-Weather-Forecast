@@ -53,20 +53,35 @@ class Weather {
 	};
 	//  Settings
 	settings  = {
-		apiKey:          '',    // API key filled by constructor.
-		coordAccuracy:   2,     // Decimal Accuracy for coordinates (.1 = 11.1km, .01 = 1.11km)
-		cacheExpiration: 3 * 60 * 60 * 1000, // In milliseconds.
-		cacheLocation:   'locationData',     // Cache location name for localStorage.
-		geoLimit:        5,     // Maximum location options from OpenWeatherMaps is 5.
-		similarAccuracy: 1,     // Difference in distance for two places with the names to be considered the same place.
-		tempAccuracy:    2,     // Decimal accuracy for temperature.
-		tempUnits:       'F'    // (F)ahrenheit or (C)elcius. Return value is in (K)elvin
+		apiKey:           '',   // API key filled by constructor.
+		coordAccuracy:    2,    // Decimal Accuracy for coordinates (.1 = 11.1km, .01 = 1.11km)
+		distanceAccuracy: 2,    // Distance conversion function accuracy.
+		cacheExpiration:  3 * 60 * 60 * 1000, // In milliseconds.
+		cacheLocation:    'locationData',     // Cache location name for localStorage.
+		geoLimit:         5,    // Maximum location options from OpenWeatherMaps is 5.
+		similarAccuracy:  1,    // Difference in distance for two places with the names to be considered the same place.
+		tempAccuracy:     2,    // Decimal accuracy for temperature.
+		units:            {
+			imperial:   {
+				distance: 'mi',
+				temp:     '°F'
+			},
+			metric:     {
+				distance: 'km',
+				temp:     '°C'
+			},
+			scientific: {
+				distance: 'km',
+				temp:     ' K'
+			}
+		},
+		unitSystem:       'imperial'  // Unit system (imperial, metric, scientific).
 	};
 	//  Element template references
 	templates = {
 		dayCard:             document.getElementById('dayCard').content,
 		locationListOptions: document.getElementById('locationListOptions').content,
-		locationItem:       document.getElementById('locationItem').content,
+		locationItem:        document.getElementById('locationItem').content,
 		timeCard:            document.getElementById('timeCard').content
 	};
 
@@ -141,8 +156,8 @@ class Weather {
 		const objectBuild = (apiData) => {
 			// Rebuild the weather API object.
 			return {
-				humidity:   apiData.main.humidity + '%',
-				pressure:   apiData.main.pressure + 'hPa',
+				humidity:   apiData.main.humidity + ' %',
+				pressure:   apiData.main.pressure + ' hPa',
 				timestamp:  apiData.dt,
 				temp:       {
 					actual:    this.convertTemp(apiData.main.temp),
@@ -150,11 +165,11 @@ class Weather {
 					max:       this.convertTemp(apiData.main.temp_max),
 					min:       this.convertTemp(apiData.main.temp_min)
 				},
-				visibility: apiData.visibility,
+				visibility: this.convertDistance(apiData.visibility),
 				weather:    apiData.weather,
 				wind:       {
 					direction: this.convertDirection(apiData.wind.deg),
-					speed:     apiData.wind.speed + 'mph'
+					speed:     this.convertDistance(apiData.wind.speed * 1000) + '/h'
 				}
 			};
 		};
@@ -219,18 +234,35 @@ class Weather {
 		}
 	}
 
+	// Convert distance units from kilometers.
+	convertDistance(distance) {
+		// Check that the distance is a number.
+		if (isNaN(+distance)) return false;
+
+		// If the distance is being converted to miles.
+		else if (this.settings.unitSystem === 'imperial') {
+			// Convert km to miles (1609.344 meters = 1 mile).
+			distance = +(distance / 1609.344).toFixed(2);
+		} else distance /= 1000; // Convert meters to kilometers
+
+		// Round up to the specified amount of decimals.
+		distance = Number(distance.toFixed(this.settings.distanceAccuracy));
+		// Return the result.
+		return `${distance} ${this.settings.units[this.settings.unitSystem].distance}`;
+	}
+
 	// Convert original temperature unit (Kelvin) to the preferred unit (Celsius|Fahrenheit).
 	convertTemp(temp) {
 		// Check that the temperature is a number.
 		if (isNaN(+temp)) return false;
 		else {
-			//  Convert from Kelvin to Celsius
-			if (this.settings.tempUnits !== 'K') temp = temp - 273.15;
+			//  Convert from Kelvin to Celsius. Kelvin doesn't use °.
+			if (this.settings.unitSystem !== 'scientific') temp = temp - 273.15;
 			//  Convert from Celsius to Fahrenheit
-			if (this.settings.tempUnits === 'F') temp = 1.8 * temp + 32;
+			if (this.settings.unitSystem === 'imperial') temp = 1.8 * temp + 32;
 
 			//  Return the result
-			return `${temp.toFixed(2)}°${this.settings.tempUnits}`;
+			return Number(temp.toFixed(2)) + this.settings.units[this.settings.unitSystem].temp;
 		}
 	}
 
@@ -365,8 +397,8 @@ class Weather {
 			const locationItem = this.templates.locationItem.cloneNode(true).firstElementChild;
 
 			// Fill In the location details.
-			locationItem.querySelector('.location__list__item__city').textContent   = location.name;
-			locationItem.querySelector('.location__list__item__coords').textContent = `${location.lat}, ${location.lon}`;
+			locationItem.querySelector('.location__list__item__city').textContent   = location.city;
+			locationItem.querySelector('.location__list__item__coords').textContent = `${location.latitude}, ${location.longitude}`;
 			locationItem.querySelector('.location__list__item__stco').textContent   =
 				(location.state && location.country) ? `${location.state}, ${location.country}`
 				                                     : location.state || location.country || '';
@@ -506,19 +538,19 @@ class Weather {
 		const weatherElement = this.elements.weather;
 		const weatherData    = locationData.weatherData;
 
-		weatherElement.querySelector('.weather__location').textContent = locationData.city;
+		weatherElement.querySelector('.weather__current__location').textContent = locationData.city;
 
 		// Set the text content for the weather data.
-		weatherElement.querySelector('.weather__conditions__humidity').textContent   = weatherData.humidity ?? '';
-		weatherElement.querySelector('.weather__conditions__pressure').textContent   = weatherData.pressure ?? '';
-		weatherElement.querySelector('.weather__conditions__temp').textContent       = weatherData.temp.actual ?? '';
-		weatherElement.querySelector('.weather__conditions__feelsLike').textContent  = weatherData.temp.feelsLike ?? '';
-		weatherElement.querySelector('.weather__conditions__max').textContent        = weatherData.temp.max ?? '';
-		weatherElement.querySelector('.weather__conditions__min').textContent        = weatherData.temp.min ?? '';
-		weatherElement.querySelector('.weather__conditions__wind').textContent       =
+		weatherElement.querySelector('.weather__current__humidity').textContent   = weatherData.humidity ?? '';
+		weatherElement.querySelector('.weather__current__pressure').textContent   = weatherData.pressure ?? '';
+		weatherElement.querySelector('.weather__current__temp').textContent       = weatherData.temp.actual ?? '';
+		weatherElement.querySelector('.weather__current__feelsLike').textContent  = weatherData.temp.feelsLike ?? '';
+		weatherElement.querySelector('.weather__current__max').textContent        = weatherData.temp.max ?? '';
+		weatherElement.querySelector('.weather__current__min').textContent        = weatherData.temp.min ?? '';
+		weatherElement.querySelector('.weather__current__wind').textContent       =
 			(weatherData.wind.speed && weatherData.wind.direction)
 			? `${weatherData.wind.speed} ${weatherData.wind.direction}` : '';
-		weatherElement.querySelector('.weather__conditions__visibility').textContent = weatherData.visibility ?? '';
+		weatherElement.querySelector('.weather__current__visibility').textContent = weatherData.visibility ?? '';
 	}
 
 	// Updates the weather from OpenWeatherMap API,

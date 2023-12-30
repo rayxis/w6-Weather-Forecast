@@ -142,17 +142,28 @@ footer {
 }
 
 .weather {
-	&__conditions {
-		&__temp {}
+	display: flex;
+	flex-wrap: nowrap;
+
+	&__current {
+		width: 50vw;
+		background-color: darkgray;
+
 		&__feelsLike {}
+		&__location {}
 		&__max {}
 		&__min {}
 		&__humidity {}
-		&__wind {}
 		&__pressure {}
+		&__temp {}
 		&__visibility {}
+		&__wind {}
+
 	}
-	&__location {}
+	&__today {
+		width: 50vw;
+		background-color: midnightblue;
+	}
 }
 
 .hideEmpty:empty {

@@ -118,6 +118,19 @@ footer {
   font-style: italic;
 }
 
+.weather {
+  display: flex;
+  flex-wrap: nowrap;
+}
+.weather__current {
+  width: 50vw;
+  background-color: darkgray;
+}
+.weather__today {
+  width: 50vw;
+  background-color: midnightblue;
+}
+
 .hideEmpty:empty {
   display: none;
 }
