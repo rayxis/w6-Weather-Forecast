@@ -33,7 +33,7 @@ class Weather {
 	};
 	//  Element references
 	elements  = {
-		forecastList:         document.querySelector('.weather'),
+		forecastList:         document.querySelector('.forecast'),
 		locationList:         document.querySelector('.location__list'),
 		locationListOptions:  document.querySelector('.location__listOptions'),
 		locationSearchButton: document.querySelector('.location__search__button'),
@@ -56,8 +56,9 @@ class Weather {
 		apiKey:           '',   // API key filled by constructor.
 		coordAccuracy:    2,    // Decimal Accuracy for coordinates (.1 = 11.1km, .01 = 1.11km)
 		distanceAccuracy: 2,    // Distance conversion function accuracy.
-		cacheExpiration:  3 * 60 * 60 * 1000, // In milliseconds.
+		cacheForecastExp: 3 * 60 * 60 * 1000, // In milliseconds [3 hours].
 		cacheLocation:    'locationData',     // Cache location name for localStorage.
+		cacheWeatherExp:  60 * 60 * 1000,     // In milliseconds [1 hour].
 		geoLimit:         5,    // Maximum location options from OpenWeatherMaps is 5.
 		similarAccuracy:  1,    // Difference in distance for two places with the names to be considered the same place.
 		tempAccuracy:     2,    // Decimal accuracy for temperature.
@@ -271,17 +272,18 @@ class Weather {
 	 ***/
 
 	// Build the forecast DOM element tree from the forecast data, and then add it to the DOM.
-	forecastBuild(forecastData) {
-		if (!forecastData.length) return false;
+	forecastBuild(locationData) {
+		if (!locationData.forecastData) return false;
+
 
 		// Day builder function
 		const dayBuild = (dayData) => {
-			const dayCard = this.templates.dayCard.cloneNode(true);
-			let day       = dayjs(dayData[0].timestamp);
+			const dayCard = this.templates.dayCard.cloneNode(true).firstElementChild;
+			let day       = dayjs(dayData[0].timestamp * 1000);
 
 			// Set the text content of the day headers.
-			dayCard.querySelector('.dayCard__header__day').textContent = day.format('MMMM DD');
-			dayCard.querySelector('.dayCard__header__day').textContent = day.format('dddd');
+			dayCard.querySelector('.dayCard__header__date').textContent = day.format('MMMM DD');
+			dayCard.querySelector('.dayCard__header__day').textContent  = day.format('dddd');
 
 			// Loop through the time blocks and add them to the days.
 			dayData.forEach(dayData => dayCard.appendChild(timeBuild(dayData)));
@@ -292,27 +294,39 @@ class Weather {
 		// Time block builder function
 		const timeBuild = (forecast) => {
 			// Clone the time card
-			const timeCard = this.templates.timeCard.cloneNode(true);
+			const timeCard = this.templates.timeCard.cloneNode(true).firstElementChild;
+			console.log(forecast);
 
 			//  Set the time (format: 12am), current temperature, humidity, and wind speed/direction.
-			timeCard.querySelector('.timeCard__time').textContent           = dayjs.unix(forecast.timestamp).format('ha');
-			timeCard.querySelector('.timeCard__humidity__data').textContent = forecast.humidity;
-			timeCard.querySelector('.timeCard__pressure__data').textContent = forecast.pressure;
-			timeCard.querySelector('.timeCard__temp__data').textContent     = forecast.temp.current;
-			timeCard.querySelector('.timeCard__wind__data').textContent     = `${forecast.wind.speed} ${forecast.wind.direction}`;
+			timeCard.querySelector('.timeCard__time').textContent     = dayjs.unix(forecast.timestamp).format('ha');
+			timeCard.querySelector('.timeCard__humidity').textContent = forecast.humidity;
+			timeCard.querySelector('.timeCard__pressure').textContent = forecast.pressure;
+			timeCard.querySelector('.timeCard__temp').textContent     = forecast.temp.actual;
+			timeCard.querySelector('.timeCard__wind').textContent     = `${forecast.wind.speed} ${forecast.wind.direction}`;
+
+			timeCard.querySelector('.timeCard__humidity').dataset.label = 'Humidity';
+			timeCard.querySelector('.timeCard__pressure').dataset.label = 'Pressure';
+			timeCard.querySelector('.timeCard__temp').dataset.label     = 'Temp';
+			timeCard.querySelector('.timeCard__wind').dataset.label     = 'Wind';
 
 			return timeCard;
 		};
 
 		// Empty the forecast DOM list, and then loop through the days and add the updated data to it.
-		[...this.elements.forecastList.children].forEach(child => child.remove());
-		forecastData.forEach(day => this.elements.forecastList.appendChild(dayBuild(day)));
+		[...this.elements.forecastList.children].forEach((child, index) => {
+			// TODO: Not sure if this is necessary at the moment.
+			if (index !== 0) child.remove();
+		});
+		Object.values(locationData.forecastData).forEach(day => {
+			const newDay = dayBuild(day);
+			this.elements.forecastList.appendChild(newDay);
+		});
 	}
 
 	// Updates the forecast from OpenWeatherMap API,
 	async forecastUpdate(locationData) {
 		// If the cache has expired OR there isn't any weather data stored in the location object, go fish.
-		if (locationData.cacheUntil < Date.now() || !Object.keys(locationData.forecastData).length) {
+		if (locationData.cacheForecastUntil < Date.now() || !Object.keys(locationData.forecastData).length) {
 			let url    = this.apis.forecast;
 			url.search = new URLSearchParams({
 				                                 apiKey: this.settings.apiKey,
@@ -323,6 +337,8 @@ class Weather {
 			// Pull the weather request from the API, and rebuild the response object.
 			await this.apiFetchJSON(url.href, (forecastData) => {
 				locationData.forecastData = this.apiDataBuild(forecastData);
+				if (locationData.forecastData)
+					locationData.cacheForecastUntil = Date.now() + this.settings.cacheForecastExp;
 				// Build (fill in) the weather element data.
 				this.forecastBuild(locationData);
 			});
@@ -344,14 +360,15 @@ class Weather {
 		//                                                              loc.lon - longitude < this.settings.similarAccuracy) ?? null;
 
 		const location = {
-			cacheUntil: Date.now() - 1,
-			lastAccess: Date.now(),
-			latitude:   latitude,
-			longitude:  longitude,
-			city:       locationData.name ?? '',
-			state:      locationData.state ?? '',
-			country:    locationData.country ?? '',
-			zip:        locationData.zip ?? '',
+			cacheForecastUntil: Date.now() - 1,
+			cacheWeatherUntil:  Date.now() - 1,
+			lastAccess:         Date.now(),
+			latitude:           latitude,
+			longitude:          longitude,
+			city:               locationData.name ?? '',
+			state:              locationData.state ?? '',
+			country:            locationData.country ?? '',
+			zip:                locationData.zip ?? '',
 		}
 
 		this.data.location.push(location);
@@ -538,25 +555,25 @@ class Weather {
 		const weatherElement = this.elements.weather;
 		const weatherData    = locationData.weatherData;
 
-		weatherElement.querySelector('.weather__current__location').textContent = locationData.city;
+		weatherElement.querySelector('.weather__location').textContent = locationData.city;
 
 		// Set the text content for the weather data.
-		weatherElement.querySelector('.weather__current__humidity').textContent   = weatherData.humidity ?? '';
-		weatherElement.querySelector('.weather__current__pressure').textContent   = weatherData.pressure ?? '';
-		weatherElement.querySelector('.weather__current__temp').textContent       = weatherData.temp.actual ?? '';
-		weatherElement.querySelector('.weather__current__feelsLike').textContent  = weatherData.temp.feelsLike ?? '';
-		weatherElement.querySelector('.weather__current__max').textContent        = weatherData.temp.max ?? '';
-		weatherElement.querySelector('.weather__current__min').textContent        = weatherData.temp.min ?? '';
-		weatherElement.querySelector('.weather__current__wind').textContent       =
+		weatherElement.querySelector('.weather__humidity').textContent   = weatherData.humidity ?? '';
+		weatherElement.querySelector('.weather__pressure').textContent   = weatherData.pressure ?? '';
+		weatherElement.querySelector('.weather__temp').textContent       = weatherData.temp.actual ?? '';
+		weatherElement.querySelector('.weather__feelsLike').textContent  = weatherData.temp.feelsLike ?? '';
+		weatherElement.querySelector('.weather__max').textContent        = weatherData.temp.max ?? '';
+		weatherElement.querySelector('.weather__min').textContent        = weatherData.temp.min ?? '';
+		weatherElement.querySelector('.weather__wind').textContent       =
 			(weatherData.wind.speed && weatherData.wind.direction)
 			? `${weatherData.wind.speed} ${weatherData.wind.direction}` : '';
-		weatherElement.querySelector('.weather__current__visibility').textContent = weatherData.visibility ?? '';
+		weatherElement.querySelector('.weather__visibility').textContent = weatherData.visibility ?? '';
 	}
 
 	// Updates the weather from OpenWeatherMap API,
 	async weatherUpdate(locationData) {
 		// If the cache has expired OR there isn't any weather data stored in the location object, go fish.
-		if (locationData.cacheUntil < Date.now() || !Object.keys(locationData.weatherData).length) {
+		if (locationData.cacheWeatherUntil < Date.now() || !Object.keys(locationData.weatherData).length) {
 			let url    = this.apis.weather;
 			url.search = new URLSearchParams({
 				                                 apiKey: this.settings.apiKey,
@@ -567,6 +584,8 @@ class Weather {
 			// Pull the weather request from the API, and rebuild the response object.
 			await this.apiFetchJSON(url.href, (weatherData) => {
 				locationData.weatherData = this.apiDataBuild(weatherData);
+				if (locationData.weatherData)
+					locationData.cacheWeatherUntil = Date.now() + this.settings.cacheWeatherExp;
 				// Build (fill in) the weather element data.
 				this.weatherBuild(locationData);
 			});

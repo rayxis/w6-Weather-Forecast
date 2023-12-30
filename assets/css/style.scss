@@ -5,13 +5,13 @@
 }
 
 :root {
-	--bg-color:             white;
-	--border-color:         rgba(0, 0, 0.1);
-	--header-bg-color:      darkblue;
+	--bg-color:              white;
+	--border-color:          rgba(0, 0, 0.1);
+	--header-bg-color:       darkblue;
 	--header-bg-color-hover: rgba(100, 100, 150, 0.9);
-	--header-color:         white;
-	--popup-bg-color:       rgba(100, 100, 150, 0.9);
-	--popup-bg-color-hover: rgba(0, 0, 0, 0.3);
+	--header-color:          white;
+	--popup-bg-color:        rgba(100, 100, 150, 0.9);
+	--popup-bg-color-hover:  rgba(0, 0, 0, 0.3);
 }
 
 body {
@@ -19,12 +19,7 @@ body {
 	font-size:   88%;
 }
 
-main {
-	display: flex;
-	gap:     1em;
-}
-
-header {
+.page__header {
 	display:          flex;
 	flex-flow:        row nowrap;
 	align-items:      center;
@@ -141,29 +136,64 @@ footer {
 	}
 }
 
+.forecast {
+	display:   flex;
+	flex-wrap: wrap;
+
+	&__card {
+		flex:      1 1 20%;
+		padding:   .5rem;
+
+		&:not(:first-of-type) {
+			display:   flex;
+			flex-flow: column nowrap;
+			gap:       .5rem;
+		}
+
+		&:nth-of-type(-n+2) {
+			flex-basis: 50%;
+			padding:    1rem;
+		}
+	}
+}
+
+.dayCard {
+	&__time {
+		display:    flex;
+		flex-flow:  column nowrap;
+		list-style: none;
+
+		&__item::before {
+			display: inline-block;
+			content: attr(data-label);
+			width: 5rem;
+		}
+	}
+}
+
 .weather {
-	display: flex;
-	flex-wrap: nowrap;
+	display:          flex;
+	flex-wrap:        nowrap;
 
-	&__current {
-		width: 50vw;
-		background-color: darkgray;
+	background-color: darkgray;
 
-		&__feelsLike {}
-		&__location {}
-		&__max {}
-		&__min {}
-		&__humidity {}
-		&__pressure {}
-		&__temp {}
-		&__visibility {}
-		&__wind {}
+	&__feelsLike {}
 
-	}
-	&__today {
-		width: 50vw;
-		background-color: midnightblue;
-	}
+	&__location {}
+
+	&__max {}
+
+	&__min {}
+
+	&__humidity {}
+
+	&__pressure {}
+
+	&__temp {}
+
+	&__visibility {}
+
+	&__wind {}
 }
 
 .hideEmpty:empty {

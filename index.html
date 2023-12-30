@@ -7,7 +7,7 @@
 		<link rel="stylesheet" href="./assets/css/style.css"/>
 	</head>
 	<body>
-		<header>
+		<header class="page__header">
 			<h1>Weather Forecast</h1>
 			<aside class="location">
 				<form class="location__search">
@@ -27,17 +27,15 @@
 		</header>
 		<main class="forecast">
 			<section class="forecast__card weather">
-				<div class="weather__current">
-					<div class="weather__current__location"></div>
-					<div class="weather__current__temp hideEmpty"></div>
-					<div class="weather__current__feelsLike hideEmpty"></div>
-					<div class="weather__current__max hideEmpty"></div>
-					<div class="weather__current__min hideEmpty"></div>
-					<div class="weather__current__humidity hideEmpty"></div>
-					<div class="weather__current__wind hideEmpty"></div>
-					<div class="weather__current__pressure hideEmpty"></div>
-					<div class="weather__current__visibility hideEmpty"></div>
-				</div>
+				<div class="weather__location"></div>
+				<div class="weather__temp hideEmpty"></div>
+				<div class="weather__feelsLike hideEmpty"></div>
+				<div class="weather__max hideEmpty"></div>
+				<div class="weather__min hideEmpty"></div>
+				<div class="weather__humidity hideEmpty"></div>
+				<div class="weather__wind hideEmpty"></div>
+				<div class="weather__pressure hideEmpty"></div>
+				<div class="weather__visibility hideEmpty"></div>
 			</section>
 		</main>
 		<footer></footer>
@@ -49,9 +47,6 @@
 					<h3 class="dayCard__header__date"></h3>
 					<h4 class="dayCard__header__day"></h4>
 				</header>
-				<div class="dayCard__weather">
-
-				</div>
 			</section>
 		</template>
 
@@ -64,26 +59,14 @@
 		</template>
 
 		<template id="timeCard">
-			<ul class="card timeCard">
-				<li class="card__item timeCard__date"></li>
-				<li class="card__item timeCard__day"></li>
-				<li class="card__item timeCard__time"></li>
-				<li class="card__item timeCard__temp">
-					<span class="card__item__label timeCard__temp__label">Temp</span>
-					<span class="card__item__data timeCard__temp__data"></span>
-				</li>
-				<li class="card__item timeCard__wind">
-					<span class="card__item__label timeCard__wind__label">Wind</span>
-					<span class="card__item__data timeCard__wind__data"></span>
-				</li>
-				<li class="card__item timeCard__humidity">
-					<span class="card__item__label timeCard__humidity__label">Humidity</span>
-					<span class="card__item__data timeCard__humidity__data"></span>
-				</li>
-				<li class="card__item timeCard__pressure">
-					<span class="card__item__label timeCard__pressure__label">Pressure</span>
-					<span class="card__item__data timeCard__pressure__data"></span>
-				</li>
+			<ul class="dayCard__time timeCard">
+				<li class="dayCard__time__item timeCard__date"></li>
+				<li class="dayCard__time__item timeCard__day"></li>
+				<li class="dayCard__time__item timeCard__time"></li>
+				<li class="dayCard__time__item timeCard__temp"></li>
+				<li class="dayCard__time__item timeCard__wind"></li>
+				<li class="dayCard__time__item timeCard__humidity"></li>
+				<li class="dayCard__time__item timeCard__pressure"></li>
 			</ul>
 		</template>
 		<template id="locationItem">

@@ -19,12 +19,7 @@ body {
   font-size: 88%;
 }
 
-main {
-  display: flex;
-  gap: 1em;
-}
-
-header {
+.page__header {
   display: flex;
   flex-flow: row nowrap;
   align-items: center;
@@ -118,19 +113,40 @@ footer {
   font-style: italic;
 }
 
+.forecast {
+  display: flex;
+  flex-wrap: wrap;
+}
+.forecast__card {
+  flex: 1 1 20%;
+  padding: 0.5rem;
+}
+.forecast__card:not(:first-of-type) {
+  display: flex;
+  flex-flow: column nowrap;
+  gap: 0.5rem;
+}
+.forecast__card:nth-of-type(-n+2) {
+  flex-basis: 50%;
+  padding: 1rem;
+}
+
+.dayCard__time {
+  display: flex;
+  flex-flow: column nowrap;
+  list-style: none;
+}
+.dayCard__time__item::before {
+  display: inline-block;
+  content: attr(data-label);
+  width: 5rem;
+}
+
 .weather {
   display: flex;
   flex-wrap: nowrap;
-}
-.weather__current {
-  width: 50vw;
   background-color: darkgray;
 }
-.weather__today {
-  width: 50vw;
-  background-color: midnightblue;
-}
-
 .hideEmpty:empty {
   display: none;
 }
