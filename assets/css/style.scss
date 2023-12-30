@@ -22,6 +22,7 @@ body {
 .page__header {
 	display:          flex;
 	flex-flow:        row nowrap;
+	justify-content: space-between;
 	align-items:      center;
 	gap:              1rem;
 
@@ -34,48 +35,47 @@ footer {
 	height: 10rem;
 }
 
-.location {
+.locationSearch {
 	display:   flex;
 	flex-wrap: nowrap;
+	align-items: center;
 	gap:       2rem;
 
-	&__search-container {
+	&-container {
 		position:    relative;
 		display:     flex;
-		flex-flow:   column nowrap;
+		flex-wrap: wrap;
 		align-items: center;
 		gap:         .1rem;
+		width: 10rem;
 
 		border:      none;
 	}
 
-	&__search {
-		display:   flex;
-		flex-wrap: nowrap;
-
-		&__label {
-			font-size:      0.5rem;
-			letter-spacing: .03rem;
-		}
-
-		&__input {
-			font-size: 0.7rem;
-			padding:   .25rem;
-			height:    1.5rem;
-		}
-
-		&__button {height: 1.5rem;}
+	&__label {
+		margin-left: .5rem;
+		font-size:      0.5rem;
+		letter-spacing: .03rem;
 	}
+
+	&__input {
+		font-size: 0.7rem;
+		padding:   .25rem;
+		height:    1.5rem;
+	}
+
+	&__button {height: 1.5rem;}
 
 	&__list {
 		display:    flex;
 		flex-wrap:  nowrap;
+		gap: .5rem;
 		list-style: none;
 
 		&__item {
 			display:       flex;
 			flex-flow:     column nowrap;
-			padding:       .25rem;
+			padding:       .5rem;
 
 			border-radius: .5rem;
 
@@ -141,8 +141,9 @@ footer {
 	flex-wrap: wrap;
 
 	&__card {
-		flex:      1 1 20%;
-		padding:   .5rem;
+		flex:    1 1 calc(20% - 1rem);
+		margin:  1rem .5rem;
+		padding: .5rem;
 
 		&:not(:first-of-type) {
 			display:   flex;
@@ -153,11 +154,21 @@ footer {
 		&:nth-of-type(-n+2) {
 			flex-basis: 50%;
 			padding:    1rem;
+			margin:     0;
+		}
+
+		&__item::before {
+			display: inline-block;
+			content: attr(data-label);
+			width:   4rem;
 		}
 	}
 }
 
 .dayCard {
+	background-color: midnightblue;
+	color:            white;
+
 	&__time {
 		display:    flex;
 		flex-flow:  column nowrap;
@@ -166,34 +177,48 @@ footer {
 		&__item::before {
 			display: inline-block;
 			content: attr(data-label);
-			width: 5rem;
+			width:   5rem;
 		}
 	}
 }
 
 .weather {
-	display:          flex;
-	flex-wrap:        nowrap;
+	display:            grid;
+	grid-template-areas:
+		"location location location . ."
+		". temp temp . ."
+		". feelsLike feelsLike . ."
+		". tempMin tempMax . ."
+		". humidity pressure visibility wind"
+		". . . . .";
 
-	background-color: darkgray;
+	grid-template-rows: auto auto auto auto auto 5fr;
+	flex-wrap:          nowrap;
 
-	&__feelsLike {}
+	background-color:   darkgray;
 
-	&__location {}
+	&__feelsLike {grid-area: feelsLike;}
 
-	&__max {}
+	&__location {
+		grid-area: location;
 
-	&__min {}
+		font-size: 3rem;
+		font-weight: lighter;
+	}
 
-	&__humidity {}
+	&__max {grid-area: tempMax;}
 
-	&__pressure {}
+	&__min {grid-area: tempMin;}
 
-	&__temp {}
+	&__humidity {grid-area: humidity;}
 
-	&__visibility {}
+	&__pressure {grid-area: pressure;}
 
-	&__wind {}
+	&__temp {grid-area: temp;}
+
+	&__visibility {grid-area: visibility;}
+
+	&__wind {grid-area: wind;}
 }
 
 .hideEmpty:empty {

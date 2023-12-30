@@ -22,6 +22,7 @@ body {
 .page__header {
   display: flex;
   flex-flow: row nowrap;
+  justify-content: space-between;
   align-items: center;
   gap: 1rem;
   padding: 1rem;
@@ -33,56 +34,56 @@ footer {
   height: 10rem;
 }
 
-.location {
+.locationSearch {
   display: flex;
   flex-wrap: nowrap;
+  align-items: center;
   gap: 2rem;
 }
-.location__search-container {
+.locationSearch-container {
   position: relative;
   display: flex;
-  flex-flow: column nowrap;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.1rem;
+  width: 10rem;
   border: none;
 }
-.location__search {
-  display: flex;
-  flex-wrap: nowrap;
-}
-.location__search__label {
+.locationSearch__label {
+  margin-left: 0.5rem;
   font-size: 0.5rem;
   letter-spacing: 0.03rem;
 }
-.location__search__input {
+.locationSearch__input {
   font-size: 0.7rem;
   padding: 0.25rem;
   height: 1.5rem;
 }
-.location__search__button {
+.locationSearch__button {
   height: 1.5rem;
 }
-.location__list {
+.locationSearch__list {
   display: flex;
   flex-wrap: nowrap;
+  gap: 0.5rem;
   list-style: none;
 }
-.location__list__item {
+.locationSearch__list__item {
   display: flex;
   flex-flow: column nowrap;
-  padding: 0.25rem;
+  padding: 0.5rem;
   border-radius: 0.5rem;
 }
-.location__list__item:hover {
+.locationSearch__list__item:hover {
   cursor: pointer;
   background-color: var(--header-bg-color-hover);
 }
-.location__list__item__stco, .location__list__item__coords {
+.locationSearch__list__item__stco, .locationSearch__list__item__coords {
   margin-left: 0.25rem;
   font-size: 0.7rem;
   font-style: italic;
 }
-.location__listOptions {
+.locationSearch__listOptions {
   position: absolute;
   top: 1.65rem;
   left: 0;
@@ -94,20 +95,20 @@ footer {
   border-radius: 0 0 0.5rem 0.5rem;
   box-shadow: 0 2.5px 5px var(--border-color);
 }
-.location__listOptions:empty {
+.locationSearch__listOptions:empty {
   display: none;
 }
-.location__listOptions__option {
+.locationSearch__listOptions__option {
   display: flex;
   flex-flow: column nowrap;
   padding: 0.25rem;
   border-radius: 0.5rem;
 }
-.location__listOptions__option:hover {
+.locationSearch__listOptions__option:hover {
   cursor: pointer;
   background-color: var(--popup-bg-color-hover);
 }
-.location__listOptions__option__stco, .location__listOptions__option__coords {
+.locationSearch__listOptions__option__stco, .locationSearch__listOptions__option__coords {
   margin-left: 0.25rem;
   font-size: 0.7rem;
   font-style: italic;
@@ -118,7 +119,8 @@ footer {
   flex-wrap: wrap;
 }
 .forecast__card {
-  flex: 1 1 20%;
+  flex: 1 1 calc(20% - 1rem);
+  margin: 1rem 0.5rem;
   padding: 0.5rem;
 }
 .forecast__card:not(:first-of-type) {
@@ -129,8 +131,18 @@ footer {
 .forecast__card:nth-of-type(-n+2) {
   flex-basis: 50%;
   padding: 1rem;
+  margin: 0;
+}
+.forecast__card__item::before {
+  display: inline-block;
+  content: attr(data-label);
+  width: 4rem;
 }
 
+.dayCard {
+  background-color: midnightblue;
+  color: white;
+}
 .dayCard__time {
   display: flex;
   flex-flow: column nowrap;
@@ -143,10 +155,42 @@ footer {
 }
 
 .weather {
-  display: flex;
+  display: grid;
+  grid-template-areas: "location location location . ." ". temp temp . ." ". feelsLike feelsLike . ." ". tempMin tempMax . ." ". humidity pressure visibility wind" ". . . . .";
+  grid-template-rows: auto auto auto auto auto 5fr;
   flex-wrap: nowrap;
   background-color: darkgray;
 }
+.weather__feelsLike {
+  grid-area: feelsLike;
+}
+.weather__location {
+  grid-area: location;
+  font-size: 3rem;
+  font-weight: lighter;
+}
+.weather__max {
+  grid-area: tempMax;
+}
+.weather__min {
+  grid-area: tempMin;
+}
+.weather__humidity {
+  grid-area: humidity;
+}
+.weather__pressure {
+  grid-area: pressure;
+}
+.weather__temp {
+  grid-area: temp;
+}
+.weather__visibility {
+  grid-area: visibility;
+}
+.weather__wind {
+  grid-area: wind;
+}
+
 .hideEmpty:empty {
   display: none;
 }

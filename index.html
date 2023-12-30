@@ -9,35 +9,35 @@
 	<body>
 		<header class="page__header">
 			<h1>Weather Forecast</h1>
-			<aside class="location">
-				<form class="location__search">
-					<fieldset class="location__search-container">
-						<input class="location__search__input"
-						       id="place"
-						       name="place"
-						       placeholder="Enter a location"
-						       type="text"/>
-						<label class="location__search__label" for="place">City, State, Country, Zip or Lat/Lon</label>
-						<ul class="location__listOptions"></ul>
-					</fieldset>
-					<button class="location__search__button">Go</button>
-				</form>
-				<ul class="location__list"></ul>
-			</aside>
+			<form class="locationSearch">
+				<ul class="locationSearch__list"></ul>
+				<fieldset class="locationSearch-container">
+					<input class="locationSearch__input"
+					       id="place"
+					       name="place"
+					       placeholder="Enter a location"
+					       type="text"/>
+					<button class="locationSearch__button">Go</button>
+					<label class="locationSearch__label" for="place">City, State, Country, Zip or Lat/Lon</label>
+					<ul class="locationSearch__listOptions"></ul>
+				</fieldset>
+			</form>
 		</header>
+
 		<main class="forecast">
 			<section class="forecast__card weather">
-				<div class="weather__location"></div>
-				<div class="weather__temp hideEmpty"></div>
-				<div class="weather__feelsLike hideEmpty"></div>
-				<div class="weather__max hideEmpty"></div>
-				<div class="weather__min hideEmpty"></div>
-				<div class="weather__humidity hideEmpty"></div>
-				<div class="weather__wind hideEmpty"></div>
-				<div class="weather__pressure hideEmpty"></div>
-				<div class="weather__visibility hideEmpty"></div>
+				<div class="forecast__card__item weather__location"></div>
+				<div class="forecast__card__item weather__temp hideEmpty"></div>
+				<div class="forecast__card__item weather__feelsLike hideEmpty"></div>
+				<div class="forecast__card__item weather__max hideEmpty"></div>
+				<div class="forecast__card__item weather__min hideEmpty"></div>
+				<div class="forecast__card__item weather__humidity hideEmpty"></div>
+				<div class="forecast__card__item weather__wind hideEmpty"></div>
+				<div class="forecast__card__item weather__pressure hideEmpty"></div>
+				<div class="forecast__card__item weather__visibility hideEmpty"></div>
 			</section>
 		</main>
+
 		<footer></footer>
 
 		<template id="dayCard">
@@ -51,10 +51,10 @@
 		</template>
 
 		<template id="locationListOptions">
-			<li class="location__listOptions__option">
-				<span class="location__listOptions__option__city"></span>
-				<span class="location__listOptions__option__stco"></span>
-				<span class="location__listOptions__option__coords"></span>
+			<li class="locationSearch__listOptions__option">
+				<span class="locationSearch__listOptions__option__city"></span>
+				<span class="locationSearch__listOptions__option__stco"></span>
+				<span class="locationSearch__listOptions__option__coords"></span>
 			</li>
 		</template>
 
@@ -70,15 +70,16 @@
 			</ul>
 		</template>
 		<template id="locationItem">
-			<li class="location__list__item">
-				<span class="location__list__item__city"></span>
-				<span class="location__list__item__stco"></span>
-				<span class="location__list__item__coords"></span>
+			<li class="locationSearch__list__item">
+				<span class="locationSearch__list__item__city"></span>
+				<span class="locationSearch__list__item__stco"></span>
+				<span class="locationSearch__list__item__coords"></span>
 			</li>
 		</template>
 
 		<script src="https://cdn.jsdelivr.net/npm/dayjs@1.11/dayjs.min.js"
 		        integrity="sha256-nP25Pzivzy0Har7NZtMr/TODzfGWdlTrwmomYF2vQXM=" crossorigin="anonymous"></script>
+		<script src="https://cdn.jsdelivr.net/npm/dayjs@1.11/locale/fr.js"></script>
 		<script src="./assets/js/secret.js"></script>
 		<script src="./assets/js/script.js"></script>
 	</body>

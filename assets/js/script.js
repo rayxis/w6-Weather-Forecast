@@ -1,19 +1,22 @@
 /***
  TODO:
+	 - Error testing and handling (and messages for the user)
 	 - Location
 	   - Get user's current location
 	   - Fix popup for search results (same city twice)
+	   - Use locale and languages.
 	 - Weather
-	     - Current weather?
 	     - Average weather / day?
-         - Figure out how to load (or wait for the load) for the forecast/ weather
 	 - Design
+	   - Scalable
        - Header
        - Display the time.
        - Location Section
        - Weather Section
        - Set background of card to reflect weather conditions.
        - Find some icons to reflect the weather conditions.
+     - Bugs
+	   - Merge existing locations
  ***/
 let weather;
 
@@ -34,10 +37,10 @@ class Weather {
 	//  Element references
 	elements  = {
 		forecastList:         document.querySelector('.forecast'),
-		locationList:         document.querySelector('.location__list'),
-		locationListOptions:  document.querySelector('.location__listOptions'),
-		locationSearchButton: document.querySelector('.location__search__button'),
-		locationSearchInput:  document.querySelector('.location__search__input'),
+		locationList:         document.querySelector('.locationSearch__list'),
+		locationListOptions:  document.querySelector('.locationSearch__listOptions'),
+		locationSearchButton: document.querySelector('.locationSearch__button'),
+		locationSearchInput:  document.querySelector('.locationSearch__input'),
 		weather:              document.querySelector('.weather')
 	};
 	// Error messages
@@ -60,7 +63,7 @@ class Weather {
 		cacheLocation:    'locationData',     // Cache location name for localStorage.
 		cacheWeatherExp:  60 * 60 * 1000,     // In milliseconds [1 hour].
 		geoLimit:         5,    // Maximum location options from OpenWeatherMaps is 5.
-		similarAccuracy:  1,    // Difference in distance for two places with the names to be considered the same place.
+		similarAccuracy:  .1,   // Difference in distance for two places with the names to be considered the same place.
 		tempAccuracy:     2,    // Decimal accuracy for temperature.
 		units:            {
 			imperial:   {
@@ -132,6 +135,7 @@ class Weather {
 	apiCacheSave() {
 		// Convert the location data array into a string.
 		let saveData = JSON.stringify(this.data.location);
+
 		// If JSON was successful in converting it, save the item to localStorage.
 		if (saveData) {
 			localStorage.setItem(this.settings.cacheLocation, saveData);
@@ -177,7 +181,7 @@ class Weather {
 
 		// If the incoming object has a list property, then it will need to be looped through; otherwise just return it,
 		if (apiData.hasOwnProperty('list')) {
-			const dayList = [];
+			const dayList = {};
 
 			// Loop through the list of returned forecast objects.
 			apiData.list.forEach(data => {
@@ -282,7 +286,7 @@ class Weather {
 			let day       = dayjs(dayData[0].timestamp * 1000);
 
 			// Set the text content of the day headers.
-			dayCard.querySelector('.dayCard__header__date').textContent = day.format('MMMM DD');
+			dayCard.querySelector('.dayCard__header__date').textContent = day.format('MMMM D');
 			dayCard.querySelector('.dayCard__header__day').textContent  = day.format('dddd');
 
 			// Loop through the time blocks and add them to the days.
@@ -295,7 +299,6 @@ class Weather {
 		const timeBuild = (forecast) => {
 			// Clone the time card
 			const timeCard = this.templates.timeCard.cloneNode(true).firstElementChild;
-			console.log(forecast);
 
 			//  Set the time (format: 12am), current temperature, humidity, and wind speed/direction.
 			timeCard.querySelector('.timeCard__time').textContent     = dayjs.unix(forecast.timestamp).format('ha');
@@ -314,7 +317,7 @@ class Weather {
 
 		// Empty the forecast DOM list, and then loop through the days and add the updated data to it.
 		[...this.elements.forecastList.children].forEach((child, index) => {
-			// TODO: Not sure if this is necessary at the moment.
+			// Do not remove the current weather element.
 			if (index !== 0) child.remove();
 		});
 		Object.values(locationData.forecastData).forEach(day => {
@@ -351,6 +354,8 @@ class Weather {
 
 	// Build the location object data for first-time entry into data storage.
 	locationBuild(locationData) {
+		// If location data does not include proper coordinates, then abort.
+		if (!locationData.lat || !locationData.lon) return false;
 		//  Convert the coordinates to a lesser accuracy.
 		const [latitude, longitude] = this.convertCoords(locationData.lat, locationData.lon);
 
@@ -385,14 +390,14 @@ class Weather {
 			const locationOption = this.templates.locationListOptions.cloneNode(true).firstElementChild;
 
 			// Fill in the text data.
-			locationOption.querySelector('.location__listOptions__option__city').textContent   = location.name;
-			locationOption.querySelector('.location__listOptions__option__coords').textContent = `${location.lat}, ${location.lon}`;
-			locationOption.querySelector('.location__listOptions__option__stco').textContent   =
+			locationOption.querySelector('.locationSearch__listOptions__option__city').textContent   = location.name;
+			locationOption.querySelector('.locationSearch__listOptions__option__coords').textContent = `${location.lat}, ${location.lon}`;
+			locationOption.querySelector('.locationSearch__listOptions__option__stco').textContent   =
 				(location.state && location.country) ? `${location.state}, ${location.country}`
 				                                     : location.state || location.country || '';
 
 			// Add an event listener and attach the object to the element.
-			element.addEventListener('click', this.actionLocationListOptionsSelect.bind(this));
+			locationOption.addEventListener('click', this.actionLocationListOptionsSelect.bind(this));
 
 			// Save the locations to an array.
 			this.data.locationListOptions.push(location);
@@ -414,9 +419,9 @@ class Weather {
 			const locationItem = this.templates.locationItem.cloneNode(true).firstElementChild;
 
 			// Fill In the location details.
-			locationItem.querySelector('.location__list__item__city').textContent   = location.city;
-			locationItem.querySelector('.location__list__item__coords').textContent = `${location.latitude}, ${location.longitude}`;
-			locationItem.querySelector('.location__list__item__stco').textContent   =
+			locationItem.querySelector('.locationSearch__list__item__city').textContent   = location.city;
+			locationItem.querySelector('.locationSearch__list__item__coords').textContent = `${location.latitude}, ${location.longitude}`;
+			locationItem.querySelector('.locationSearch__list__item__stco').textContent   =
 				(location.state && location.country) ? `${location.state}, ${location.country}`
 				                                     : location.state || location.country || '';
 
@@ -505,11 +510,15 @@ class Weather {
 
 		// Otherwise, pull location data from the API
 		else await this.apiFetchJSON(url.href, (locationData => {
-			// If something other than the zipcode was being searched for, there may be multiple options.
 			// TODO: There is a bug where the same city can be returned twice, and it triggers the popup.
-			if (!urlSearch.zip?.length && locationData.length > 1) this.locationListOptions(locationData);
+
+			// If something other than the zipcode was being searched for, there may be multiple options.
+			if (!urlSearch.zip?.length && Array.isArray(locationData)) {
+				if (locationData.length > 1) this.locationListOptions(locationData);
+				else locationData = locationData[0];
+			}
 			// If the user doesn't need to make a choice, build the location object and update the list.
-			this.locationBuild(locationData);
+			if (locationData) this.locationBuild(locationData);
 		}));
 	}
 
@@ -558,16 +567,25 @@ class Weather {
 		weatherElement.querySelector('.weather__location').textContent = locationData.city;
 
 		// Set the text content for the weather data.
-		weatherElement.querySelector('.weather__humidity').textContent   = weatherData.humidity ?? '';
-		weatherElement.querySelector('.weather__pressure').textContent   = weatherData.pressure ?? '';
-		weatherElement.querySelector('.weather__temp').textContent       = weatherData.temp.actual ?? '';
 		weatherElement.querySelector('.weather__feelsLike').textContent  = weatherData.temp.feelsLike ?? '';
+		weatherElement.querySelector('.weather__humidity').textContent   = weatherData.humidity ?? '';
 		weatherElement.querySelector('.weather__max').textContent        = weatherData.temp.max ?? '';
 		weatherElement.querySelector('.weather__min').textContent        = weatherData.temp.min ?? '';
+		weatherElement.querySelector('.weather__pressure').textContent   = weatherData.pressure ?? '';
+		weatherElement.querySelector('.weather__temp').textContent       = weatherData.temp.actual ?? '';
 		weatherElement.querySelector('.weather__wind').textContent       =
 			(weatherData.wind.speed && weatherData.wind.direction)
 			? `${weatherData.wind.speed} ${weatherData.wind.direction}` : '';
 		weatherElement.querySelector('.weather__visibility').textContent = weatherData.visibility ?? '';
+
+		weatherElement.querySelector('.weather__feelsLike').dataset.label  = 'Feels Like';
+		weatherElement.querySelector('.weather__humidity').dataset.label   = 'Humidity';
+		weatherElement.querySelector('.weather__max').dataset.label        = 'Max';
+		weatherElement.querySelector('.weather__min').dataset.label        = 'Min';
+		weatherElement.querySelector('.weather__pressure').dataset.label   = 'Pressure';
+		weatherElement.querySelector('.weather__temp').dataset.label       = 'Temp';
+		weatherElement.querySelector('.weather__wind').dataset.label       = 'Wind';
+		weatherElement.querySelector('.weather__visibility').dataset.label = 'Visibility';
 	}
 
 	// Updates the weather from OpenWeatherMap API,
