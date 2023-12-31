@@ -21,6 +21,7 @@
 					<label class="locationSearch__label" for="place">City, State, Country, Zip or Lat/Lon</label>
 					<ul class="locationSearch__listOptions"></ul>
 				</fieldset>
+                <ul class="settings__language"></ul>
 			</form>
 		</header>
 
@@ -50,6 +51,10 @@
 			</section>
 		</template>
 
+        <template id="languageItem">
+            <li class="settings__language__item"></li>
+        </template>
+
 		<template id="locationListOptions">
 			<li class="locationSearch__listOptions__option">
 				<span class="locationSearch__listOptions__option__city"></span>
@@ -69,6 +74,7 @@
 				<li class="dayCard__time__item timeCard__pressure"></li>
 			</ul>
 		</template>
+
 		<template id="locationItem">
 			<li class="locationSearch__list__item">
 				<span class="locationSearch__list__item__city"></span>
@@ -80,7 +86,8 @@
 		<script src="https://cdn.jsdelivr.net/npm/dayjs@1.11/dayjs.min.js"
 		        integrity="sha256-nP25Pzivzy0Har7NZtMr/TODzfGWdlTrwmomYF2vQXM=" crossorigin="anonymous"></script>
 		<script src="https://cdn.jsdelivr.net/npm/dayjs@1.11/locale/fr.js"></script>
+        <script src="./assets/js/languages.js"></script>
 		<script src="./assets/js/secret.js"></script>
-		<script src="./assets/js/script.js"></script>
+		<script src="assets/js/Weather.js"></script>
 	</body>
 </html>

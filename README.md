@@ -28,6 +28,51 @@ Additional languages can be added to expand the functionality of the application
 languages.js, you should abe able to add any number of other language translations. This can be as simple as copying the
 object data, and pasting it on DeepL's website (https://deepl.com) for accurate translation.
 
+From a site administrator's perspective, there are multiple settings that can be adjusted to provide greater flexibility
+in how the application operates. All configuration options are located at the top of the Weather class:
+
+In settings:
+
+* **coordAccuracy** - The accuracy of the coordinates to round to and save. More numbers aren't necessarily better. Each
+  degree of latitude or longitude is 111km. That means that for every decimal, it goes down by a factor of 10; so .1
+  would be 11.1km; .001 would be 111m; and .0000001 is slightly bigger than the thickness of your cellphone. For the
+  purposes of finding an entire city, an accuracy of 2 (.01 = 1.11km) seems sufficient.
+* **distanceAccuracy** - The accuracy for converting from kilometers to miles with the function convertDistance(). There
+  are
+  1609.344 meters in 1 mile, which can lead to some unnecessarily long decimal digits. The number 2 provides accuracy of
+  1/100 of a mile, or down to 52.8ft.
+* **cacheForecastExp** & **cacheWeatherExp** - The amount of time given for the data cache to expire, for both
+  forecastData and weatherData within each object. This is a unit in milliseconds, so it may be easier to put a
+  mathematical expression of hours * minutes * seconds * milliseconds in there. Because the forecast is for every 3
+  hours, 3 * 60 * 60 * 1000 (or 10,800,000) milliseconds makes the most sense. For weather, something smaller would make
+  sense since it's reflective of the current conditions. Some sort of expiration is suggested since API calls can add up
+  if you have a quota.
+* **cacheLocation** & **cacheSettings** - The locations in localStorage, to store the cached data. cacheLocation is
+  where the location, forecast and weather data is stored. cacheSettings is where settings are stored, and this is done
+  so because a user may change their language, or their preferred units of measurement.
+* **geoLimit** - In the event where OpenWeatherMap returns more than one location, this is the limit to how many
+  responses to get. OWM's limit is 5, so any number between 1-5 is allowed.
+* **similarAccuracy** - Where someone searches for a location that shares a proximity to another location that they've
+  searched for, this is the level of accuracy to allow. The distance here is the difference in coordinate degrees
+  between two different points. .1 would be 11.1km. This seems reasonable since a city sharing the same name, within
+  11.1km is unlikely (though, not impossible: the Kansas Cities comes to mind).
+* **tempAccuracy** - Decimal accuracy for temperature conversions, using the convertTemp() function. The numbers that
+  come out of OpenWeatherMap are in Kelvin. The API offers the opportunity to request Fahrenheit or Celsius, but A.)
+  where would the fun in that be? B.) I'm sure someone else out there shares my nerdy curiosity. When converting from
+  Kelvin to Celsius, decimals aren't a problem. Converting from Celsius to Fahrenheit is where tiny numbers begin to
+  appear.
+
+Settings can also be configured for each of the unit systems (imperial, metric and scientific). Units can be changed,
+and so if you wanted to have kilometers instead of km–well, why not?
+
+The last bit of settings, which can be changed (although, it's discouraged if you don't know what you're doing) are the
+regular expressions. These are used for processing the user's input data. As of right now, cityStateCountry picks up the
+combination of at least "City, State" or "City, Country" and at most "City, State, Country". You could make the comma
+and what comes after optional by adding a "?"after the first comma, and "?" before the second comma. Coordinates
+measures up to 7 decimal places. This should be more than enough. Finally, the zip codes right now accept the Canadian
+pattern of A#A #A#, and the US' 5-digits (as well as every other country that uses it). This could be edited to do other
+countries like England, Japan, etc.
+
 ## Usage
 
 To use the Weather Forecaster, load the page up in your browser. If this is your first time visiting, click on the
