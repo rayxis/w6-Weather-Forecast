@@ -7,219 +7,291 @@
 :root {
 	--bg-color:              white;
 	--border-color:          rgba(0, 0, 0.1);
-	--header-bg-color:       darkblue;
 	--header-bg-color-hover: rgba(100, 100, 150, 0.9);
-	--header-color:          white;
 	--popup-bg-color:        rgba(100, 100, 150, 0.9);
 	--popup-bg-color-hover:  rgba(0, 0, 0, 0.3);
 }
 
+$header-bg-color:   midnightblue;
+$header-text-color: white;
+
 body {
-	font-family: Oswald, Poppins, sans-serif;
-	font-size:   88%;
+	font-size: 88%;
 }
 
-.page__header {
+.page-header {
 	display:          flex;
-	flex-flow:        row nowrap;
-	justify-content: space-between;
+	flex-flow:        nowrap;
 	align-items:      center;
-	gap:              1rem;
 
-	padding:          1rem;
-	background-color: var(--header-bg-color);
-	color:            var(--header-color);
+	background-color: $header-bg-color;
+	color:            $header-text-color;
+
+	&__title {
+		padding:     1rem;
+
+		font-family: Oswald, sans-serif;
+		font-size:   2rem;
+		font-style:  italic;
+		font-weight: lighter;
+	}
 }
 
-footer {
-	height: 10rem;
-}
-
-.locationSearch {
+.settings {
 	display:   flex;
 	flex-wrap: nowrap;
-	align-items: center;
-	gap:       2rem;
-
-	&-container {
-		position:    relative;
-		display:     flex;
-		flex-wrap: wrap;
-		align-items: center;
-		gap:         .1rem;
-		width: 10rem;
-
-		border:      none;
-	}
-
-	&__label {
-		margin-left: .5rem;
-		font-size:      0.5rem;
-		letter-spacing: .03rem;
-	}
-
-	&__input {
-		font-size: 0.7rem;
-		padding:   .25rem;
-		height:    1.5rem;
-	}
-
-	&__button {height: 1.5rem;}
+	gap:       .5rem;
 
 	&__list {
 		display:    flex;
 		flex-wrap:  nowrap;
-		gap: .5rem;
 		list-style: none;
+		gap:        .25rem;
 
-		&__item {
-			display:       flex;
-			flex-flow:     column nowrap;
-			padding:       .5rem;
+		&--language {}
 
-			border-radius: .5rem;
-
-			&:hover {
-				cursor:           pointer;
-				background-color: var(--header-bg-color-hover);
-			}
-
-			&__city {}
-
-			&__stco,
-			&__coords {
-				margin-left: .25rem;
-				font-size:   0.7rem;
-				font-style:  italic;
-			}
-		}
+		&--units {}
 	}
 
-	&__listOptions {
-		position:         absolute;
-		top:              1.65rem;
-		left:             0;
-		width:            100%;
-		padding:          .25rem;
-
-		z-index:          2;
-		list-style:       none;
-
-		background-color: var(--popup-bg-color);
-		border-radius:    0 0 .5rem .5rem;
-		box-shadow:       0 2.5px 5px var(--border-color);
-
-		&:empty {display: none;}
-
-		&__option {
-			display:       flex;
-			flex-flow:     column nowrap;
-			padding:       .25rem;
-
-			border-radius: .5rem;
-
-			&:hover {
-				cursor:           pointer;
-				background-color: var(--popup-bg-color-hover);
-			}
-
-			&__city {}
-
-			&__stco,
-			&__coords {
-				margin-left: .25rem;
-				font-size:   0.7rem;
-				font-style:  italic;
-			}
-
-		}
-	}
-}
-
-.forecast {
-	display:   flex;
-	flex-wrap: wrap;
-
-	&__card {
-		flex:    1 1 calc(20% - 1rem);
-		margin:  1rem .5rem;
+	&__item {
 		padding: .5rem;
 
-		&:not(:first-of-type) {
-			display:   flex;
-			flex-flow: column nowrap;
-			gap:       .5rem;
-		}
+		border-radius: 1rem;
 
-		&:nth-of-type(-n+2) {
-			flex-basis: 50%;
-			padding:    1rem;
-			margin:     0;
-		}
-
-		&__item::before {
-			display: inline-block;
-			content: attr(data-label);
-			width:   4rem;
+		&:hover {
+			background-color: cornflowerblue;
+			cursor:           pointer;
 		}
 	}
 }
 
-.dayCard {
-	background-color: midnightblue;
-	color:            white;
-
-	&__time {
-		display:    flex;
-		flex-flow:  column nowrap;
-		list-style: none;
-
-		&__item::before {
-			display: inline-block;
-			content: attr(data-label);
-			width:   5rem;
-		}
-	}
+.location_search {
+	display: none;
 }
 
-.weather {
-	display:            grid;
-	grid-template-areas:
-		"location location location . ."
-		". temp temp . ."
-		". feelsLike feelsLike . ."
-		". tempMin tempMax . ."
-		". humidity pressure visibility wind"
-		". . . . .";
-
-	grid-template-rows: auto auto auto auto auto 5fr;
-	flex-wrap:          nowrap;
-
-	background-color:   darkgray;
-
-	&__feelsLike {grid-area: feelsLike;}
-
-	&__location {
-		grid-area: location;
-
-		font-size: 3rem;
-		font-weight: lighter;
-	}
-
-	&__max {grid-area: tempMax;}
-
-	&__min {grid-area: tempMin;}
-
-	&__humidity {grid-area: humidity;}
-
-	&__pressure {grid-area: pressure;}
-
-	&__temp {grid-area: temp;}
-
-	&__visibility {grid-area: visibility;}
-
-	&__wind {grid-area: wind;}
-}
+//body {
+//	font-family: Oswald, sans-serif;
+//	font-size:   88%;
+//}
+//
+//.page__header {
+//	display:          flex;
+//	flex-flow:        row nowrap;
+//	justify-content: space-between;
+//	align-items:      center;
+//	gap:              1rem;
+//
+//	padding:          1rem;
+//	background-color: var(--header-bg-color);
+//	color:            var(--header-color);
+//}
+//
+//footer {
+//	height: 10rem;
+//}
+//
+//.locationSearch {
+//	display:   flex;
+//	flex-wrap: nowrap;
+//	align-items: center;
+//	gap:       2rem;
+//
+//	&-container {
+//		position:    relative;
+//		display:     flex;
+//		flex-wrap: wrap;
+//		align-items: center;
+//		gap:         .1rem;
+//		width: 10rem;
+//
+//		border:      none;
+//	}
+//
+//	&__label {
+//		margin-left: .5rem;
+//		font-size:      0.5rem;
+//		letter-spacing: .03rem;
+//	}
+//
+//	&__input {
+//		font-size: 0.7rem;
+//		padding:   .25rem;
+//		height:    1.5rem;
+//	}
+//
+//	&__button {height: 1.5rem;}
+//
+//	&__list {
+//		display:    flex;
+//		flex-wrap:  nowrap;
+//		gap: .5rem;
+//		list-style: none;
+//
+//		&__item {
+//			display:       flex;
+//			flex-flow:     column nowrap;
+//			padding:       .5rem;
+//
+//			border-radius: .5rem;
+//
+//			&:hover {
+//				cursor:           pointer;
+//				background-color: var(--header-bg-color-hover);
+//			}
+//
+//			&__city {}
+//
+//			&__stco,
+//			&__coords {
+//				margin-left: .25rem;
+//				font-size:   0.7rem;
+//				font-style:  italic;
+//			}
+//		}
+//	}
+//
+//	&__listOptions {
+//		position:         absolute;
+//		top:              1.65rem;
+//		left:             0;
+//		width:            100%;
+//		padding:          .25rem;
+//
+//		z-index:          2;
+//		list-style:       none;
+//
+//		background-color: var(--popup-bg-color);
+//		border-radius:    0 0 .5rem .5rem;
+//		box-shadow:       0 2.5px 5px var(--border-color);
+//
+//		&:empty {display: none;}
+//
+//		&__option {
+//			display:       flex;
+//			flex-flow:     column nowrap;
+//			padding:       .25rem;
+//
+//			border-radius: .5rem;
+//
+//			&:hover {
+//				cursor:           pointer;
+//				background-color: var(--popup-bg-color-hover);
+//			}
+//
+//			&__city {}
+//
+//			&__stco,
+//			&__coords {
+//				margin-left: .25rem;
+//				font-size:   0.7rem;
+//				font-style:  italic;
+//			}
+//
+//		}
+//	}
+//}
+//
+//.forecast {
+//	display:   flex;
+//	flex-wrap: wrap;
+//
+//	&__card {
+//		flex:    1 1 calc(20% - 1rem);
+//		margin:  1rem .5rem;
+//		padding: .5rem;
+//
+//		&:not(:first-of-type) {
+//			display:   flex;
+//			flex-flow: column nowrap;
+//			gap:       .5rem;
+//		}
+//
+//		&:nth-of-type(-n+2) {
+//			flex-basis: 50%;
+//			padding:    1rem;
+//			margin:     0;
+//		}
+//
+//		&__item::before {
+//			display: inline-block;
+//			content: attr(data-label);
+//			width:   4rem;
+//		}
+//	}
+//}
+//
+//.dayCard {
+//	background-color: midnightblue;
+//	color:            white;
+//
+//	&__time {
+//		display:    flex;
+//		flex-flow:  column nowrap;
+//		list-style: none;
+//
+//		&__item::before {
+//			display: inline-block;
+//			content: attr(data-label);
+//			width:   5rem;
+//		}
+//	}
+//}
+//
+//.settings {
+//	&__language {
+//		list-style: none;
+//
+//		&__item {
+//			border-radius: 25%;
+//			padding: .25rem;
+//			&:hover {
+//				background-color: lightblue;
+//				cursor: pointer;
+//			}
+//		}
+//	}
+//}
+//
+//.weather {
+//	display:            grid;
+//	grid-template-areas:
+//		"location location location icon ."
+//		". temp temp . ."
+//		". feelsLike feelsLike . ."
+//		". tempMin tempMax . ."
+//		". humidity pressure visibility wind"
+//		". . . . .";
+//
+//	grid-template-rows: auto auto auto auto auto 5fr;
+//	flex-wrap:          nowrap;
+//
+//	background-color:   darkgray;
+//
+//	&__feelsLike {grid-area: feelsLike;}
+//
+//	&__icon {grid-area: icon;}
+//
+//	&__location {
+//		grid-area: location;
+//
+//		font-size: 3rem;
+//		font-weight: lighter;
+//	}
+//
+//	&__max {grid-area: tempMax;}
+//
+//	&__min {grid-area: tempMin;}
+//
+//	&__humidity {grid-area: humidity;}
+//
+//	&__pressure {grid-area: pressure;}
+//
+//	&__temp {grid-area: temp;}
+//
+//	&__visibility {grid-area: visibility;}
+//
+//	&__wind {grid-area: wind;}
+//}
 
 .hideEmpty:empty {
 	display: none;

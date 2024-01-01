@@ -7,188 +7,52 @@
 :root {
   --bg-color: white;
   --border-color: rgba(0, 0, 0.1);
-  --header-bg-color: darkblue;
   --header-bg-color-hover: rgba(100, 100, 150, 0.9);
-  --header-color: white;
   --popup-bg-color: rgba(100, 100, 150, 0.9);
   --popup-bg-color-hover: rgba(0, 0, 0, 0.3);
 }
 
 body {
-  font-family: Oswald, Poppins, sans-serif;
   font-size: 88%;
 }
 
-.page__header {
+.page-header {
   display: flex;
-  flex-flow: row nowrap;
-  justify-content: space-between;
+  flex-flow: nowrap;
   align-items: center;
-  gap: 1rem;
-  padding: 1rem;
-  background-color: var(--header-bg-color);
-  color: var(--header-color);
-}
-
-footer {
-  height: 10rem;
-}
-
-.locationSearch {
-  display: flex;
-  flex-wrap: nowrap;
-  align-items: center;
-  gap: 2rem;
-}
-.locationSearch-container {
-  position: relative;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.1rem;
-  width: 10rem;
-  border: none;
-}
-.locationSearch__label {
-  margin-left: 0.5rem;
-  font-size: 0.5rem;
-  letter-spacing: 0.03rem;
-}
-.locationSearch__input {
-  font-size: 0.7rem;
-  padding: 0.25rem;
-  height: 1.5rem;
-}
-.locationSearch__button {
-  height: 1.5rem;
-}
-.locationSearch__list {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 0.5rem;
-  list-style: none;
-}
-.locationSearch__list__item {
-  display: flex;
-  flex-flow: column nowrap;
-  padding: 0.5rem;
-  border-radius: 0.5rem;
-}
-.locationSearch__list__item:hover {
-  cursor: pointer;
-  background-color: var(--header-bg-color-hover);
-}
-.locationSearch__list__item__stco, .locationSearch__list__item__coords {
-  margin-left: 0.25rem;
-  font-size: 0.7rem;
-  font-style: italic;
-}
-.locationSearch__listOptions {
-  position: absolute;
-  top: 1.65rem;
-  left: 0;
-  width: 100%;
-  padding: 0.25rem;
-  z-index: 2;
-  list-style: none;
-  background-color: var(--popup-bg-color);
-  border-radius: 0 0 0.5rem 0.5rem;
-  box-shadow: 0 2.5px 5px var(--border-color);
-}
-.locationSearch__listOptions:empty {
-  display: none;
-}
-.locationSearch__listOptions__option {
-  display: flex;
-  flex-flow: column nowrap;
-  padding: 0.25rem;
-  border-radius: 0.5rem;
-}
-.locationSearch__listOptions__option:hover {
-  cursor: pointer;
-  background-color: var(--popup-bg-color-hover);
-}
-.locationSearch__listOptions__option__stco, .locationSearch__listOptions__option__coords {
-  margin-left: 0.25rem;
-  font-size: 0.7rem;
-  font-style: italic;
-}
-
-.forecast {
-  display: flex;
-  flex-wrap: wrap;
-}
-.forecast__card {
-  flex: 1 1 calc(20% - 1rem);
-  margin: 1rem 0.5rem;
-  padding: 0.5rem;
-}
-.forecast__card:not(:first-of-type) {
-  display: flex;
-  flex-flow: column nowrap;
-  gap: 0.5rem;
-}
-.forecast__card:nth-of-type(-n+2) {
-  flex-basis: 50%;
-  padding: 1rem;
-  margin: 0;
-}
-.forecast__card__item::before {
-  display: inline-block;
-  content: attr(data-label);
-  width: 4rem;
-}
-
-.dayCard {
   background-color: midnightblue;
   color: white;
 }
-.dayCard__time {
-  display: flex;
-  flex-flow: column nowrap;
-  list-style: none;
-}
-.dayCard__time__item::before {
-  display: inline-block;
-  content: attr(data-label);
-  width: 5rem;
-}
-
-.weather {
-  display: grid;
-  grid-template-areas: "location location location . ." ". temp temp . ." ". feelsLike feelsLike . ." ". tempMin tempMax . ." ". humidity pressure visibility wind" ". . . . .";
-  grid-template-rows: auto auto auto auto auto 5fr;
-  flex-wrap: nowrap;
-  background-color: darkgray;
-}
-.weather__feelsLike {
-  grid-area: feelsLike;
-}
-.weather__location {
-  grid-area: location;
-  font-size: 3rem;
+.page-header__title {
+  padding: 1rem;
+  font-family: Oswald, sans-serif;
+  font-size: 2rem;
+  font-style: italic;
   font-weight: lighter;
 }
-.weather__max {
-  grid-area: tempMax;
+
+.settings {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.5rem;
 }
-.weather__min {
-  grid-area: tempMin;
+.settings__list {
+  display: flex;
+  flex-wrap: nowrap;
+  list-style: none;
+  gap: 0.25rem;
 }
-.weather__humidity {
-  grid-area: humidity;
+.settings__item {
+  padding: 0.5rem;
+  border-radius: 1rem;
 }
-.weather__pressure {
-  grid-area: pressure;
+.settings__item:hover {
+  background-color: cornflowerblue;
+  cursor: pointer;
 }
-.weather__temp {
-  grid-area: temp;
-}
-.weather__visibility {
-  grid-area: visibility;
-}
-.weather__wind {
-  grid-area: wind;
+
+.location_search {
+  display: none;
 }
 
 .hideEmpty:empty {

@@ -4,89 +4,98 @@
 		<meta charset="UTF-8">
 		<meta content='width=device-width, initial-scale=1' name='viewport'/>
 		<title>Weather Forecast</title>
+
 		<link rel="stylesheet" href="./assets/css/style.css"/>
 	</head>
+
 	<body>
-		<header class="page__header">
-			<h1>Weather Forecast</h1>
-			<form class="locationSearch">
-				<ul class="locationSearch__list"></ul>
-				<fieldset class="locationSearch-container">
-					<input class="locationSearch__input"
-					       id="place"
-					       name="place"
-					       placeholder="Enter a location"
-					       type="text"/>
-					<button class="locationSearch__button">Go</button>
-					<label class="locationSearch__label" for="place">City, State, Country, Zip or Lat/Lon</label>
-					<ul class="locationSearch__listOptions"></ul>
+		<header class="page-header">
+			<h1 class="page-header__title">Weather Forecast</h1>
+			<div class="settings">
+				<ul class="settings__list settings__list--language"></ul>
+				<ul class="settings__list settings__list--units"></ul>
+			</div>
+			<form class="search">
+				<ul class="search__list"></ul>
+				<fieldset class="search__container">
+					<input class="search__input" id="place" name="place" placeholder="Enter a location" type="text"/>
+					<button class="search__button">Go</button>
+					<label class="search__label" for="place">City, State, Country, Zip or Lat/Lon</label>
+					<ul class="search__list search__list--location-options"></ul>
 				</fieldset>
-                <ul class="settings__language"></ul>
 			</form>
 		</header>
 
 		<main class="forecast">
-			<section class="forecast__card weather">
-				<div class="forecast__card__item weather__location"></div>
-				<div class="forecast__card__item weather__temp hideEmpty"></div>
-				<div class="forecast__card__item weather__feelsLike hideEmpty"></div>
-				<div class="forecast__card__item weather__max hideEmpty"></div>
-				<div class="forecast__card__item weather__min hideEmpty"></div>
-				<div class="forecast__card__item weather__humidity hideEmpty"></div>
-				<div class="forecast__card__item weather__wind hideEmpty"></div>
-				<div class="forecast__card__item weather__pressure hideEmpty"></div>
-				<div class="forecast__card__item weather__visibility hideEmpty"></div>
+			<section class="weather">
+				<div class="weather__item weather__item--location"></div>
+				<div class="weather__item weather__item--feels-like hideEmpty"></div>
+				<div class="weather__item weather__item--humidity hideEmpty"></div>
+				<img class="weather__item weather__item--icon"/>
+				<div class="weather__item weather__item--max hideEmpty"></div>
+				<div class="weather__item weather__item--min hideEmpty"></div>
+				<div class="weather__item weather__item--pressure hideEmpty"></div>
+				<div class="weather__item weather__item--temp hideEmpty"></div>
+				<div class="weather__item weather__item--time hideEmpty"></div>
+				<div class="weather__item weather__item--wind hideEmpty"></div>
+				<div class="weather__item weather__item--visibility hideEmpty"></div>
 			</section>
 		</main>
 
 		<footer></footer>
 
-		<template id="dayCard">
-			<section class="forecast__card dayCard">
-				<header class="dayCard__header">
-					<h2 class="dayCard__header__location"></h2>
-					<h3 class="dayCard__header__date"></h3>
-					<h4 class="dayCard__header__day"></h4>
+		<!-- Template: Day Card -->
+		<template id="day-card">
+			<section class="card card--day">
+				<header class="card__header">
+					<h2 class="card__title card__title--location"></h2>
+					<h3 class="card__subtitle card__subtitle--date"></h3>
+					<h4 class="card__subtitle card__subtitle--day"></h4>
 				</header>
 			</section>
 		</template>
 
-        <template id="languageItem">
-            <li class="settings__language__item"></li>
-        </template>
-
-		<template id="locationListOptions">
-			<li class="locationSearch__listOptions__option">
-				<span class="locationSearch__listOptions__option__city"></span>
-				<span class="locationSearch__listOptions__option__stco"></span>
-				<span class="locationSearch__listOptions__option__coords"></span>
+		<!-- Template: Location Item (Past) -->
+		<template id="location-item">
+			<li class="search__item">
+				<span class="search__description search__description--city"></span>
+				<span class="search__description search__description--stco"></span>
+				<span class="search__description search__description--coords"></span>
 			</li>
 		</template>
 
-		<template id="timeCard">
-			<ul class="dayCard__time timeCard">
-				<li class="dayCard__time__item timeCard__date"></li>
-				<li class="dayCard__time__item timeCard__day"></li>
-				<li class="dayCard__time__item timeCard__time"></li>
-				<li class="dayCard__time__item timeCard__temp"></li>
-				<li class="dayCard__time__item timeCard__wind"></li>
-				<li class="dayCard__time__item timeCard__humidity"></li>
-				<li class="dayCard__time__item timeCard__pressure"></li>
+		<!-- Template: Location Option (Future) -->
+		<template id="location-option">
+			<li class="search__option">
+				<span class="search__option-description search__option-description--city"></span>
+				<span class="search__option-description search__option-description--stco"></span>
+				<span class="search__option-description search__option-description--coords"></span>
+			</li>
+		</template>
+
+		<!-- Template: Settings Item -->
+		<template id="settings-item">
+			<li class="settings__item"></li>
+		</template>
+
+		<!-- Template: Time Card (within Day Card) -->
+		<template id="time-card">
+			<ul class="card card--time">
+				<li class="card__item card__item--date"></li>
+				<li class="card__item card__item--day"></li>
+				<img class="card__item card__item--icon"/>
+				<li class="card__item card__item--time"></li>
+				<li class="card__item card__item--temp"></li>
+				<li class="card__item card__item--wind"></li>
+				<li class="card__item card__item--humidity"></li>
+				<li class="card__item card__item--pressure"></li>
 			</ul>
-		</template>
-
-		<template id="locationItem">
-			<li class="locationSearch__list__item">
-				<span class="locationSearch__list__item__city"></span>
-				<span class="locationSearch__list__item__stco"></span>
-				<span class="locationSearch__list__item__coords"></span>
-			</li>
 		</template>
 
 		<script src="https://cdn.jsdelivr.net/npm/dayjs@1.11/dayjs.min.js"
 		        integrity="sha256-nP25Pzivzy0Har7NZtMr/TODzfGWdlTrwmomYF2vQXM=" crossorigin="anonymous"></script>
 		<script src="https://cdn.jsdelivr.net/npm/dayjs@1.11/locale/fr.js"></script>
-        <script src="./assets/js/languages.js"></script>
+		<script src="./assets/js/languages.js"></script>
 		<script src="./assets/js/secret.js"></script>
 		<script src="assets/js/Weather.js"></script>
 	</body>
