@@ -18,7 +18,7 @@
      - Weather Section
      - Set background of card to reflect weather conditions.
   - Bugs
-	 - Changing the unitSystem doesn't repaint the window.
+	 - Changing the settings doesn't repaint the window.
  ***/
 
 let weather;
@@ -45,6 +45,7 @@ class Weather {
 		locationListOptions:  document.querySelector('.search__list--location-options'),
 		locationSearchButton: document.querySelector('.search__button'),
 		locationSearchInput:  document.querySelector('.search__input'),
+		locationSearchLabel:  document.querySelector('.search__label'),
 		settingsLanguageList: document.querySelector('.settings__list--language'),
 		settingsUnitsList:    document.querySelector('.settings__list--units'),
 		weather:              document.querySelector('.weather')
@@ -118,7 +119,6 @@ class Weather {
 		// Languages
 		this.languageBuildMenu();
 		this.languageSet(this.settings.language ?? this.languages.English);
-
 
 		// Units Menu Build
 		Object.keys(this.settings.units).forEach(unit => {
@@ -473,15 +473,14 @@ class Weather {
 		});
 	}
 
-	languageText(key, subkey) {
-		try {
-			// Return the language text.
-			return this.settings.language[key][subkey];
-		} catch (error) {
-			// Log the error. The language text must exist to continue operation.
-			console.log(error);
-			throw new Error("Failed to access language settings");
-		}
+	languagePage() {
+		// Page title
+		document.title = this.languageText('labels','title');
+		document.querySelector('.page-header__title').textContent = this.languageText('labels','title');
+		// Form texts
+		this.elements.locationSearchButton.textContent = this.languageText('labels', 'searchButton');
+		this.elements.locationSearchLabel.textContent  = this.languageText('labels', 'searchLabel');
+		this.elements.locationSearchInput.placeholder  = this.languageText('labels', 'searchInput');
 	}
 
 	languageSet(language) {
@@ -493,7 +492,7 @@ class Weather {
 
 		// Toggle the active class on the selected language, and remove it from the others.
 		[...this.elements.settingsLanguageList.children].forEach(child =>
-			child.classList.toggle('active', language.description === child.firstElementChild.alt));
+			                                                         child.classList.toggle('active', language.description === child.firstElementChild.alt));
 
 		// If there's a locale script, load it. English doesn't have one.
 		if (language.dayjs) {
@@ -502,6 +501,18 @@ class Weather {
 			scriptElement.onload = () => dayjs.locale(language.locale);
 			// Add the script element to the DOM.
 			document.body.appendChild(scriptElement);
+		}
+		this.languagePage();
+	}
+
+	languageText(key, subkey) {
+		try {
+			// Return the language text.
+			return this.settings.language[key][subkey];
+		} catch (error) {
+			// Log the error. The language text must exist to continue operation.
+			console.log(error);
+			throw new Error('Failed to access language settings');
 		}
 	}
 
