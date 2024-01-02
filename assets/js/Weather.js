@@ -1,11 +1,12 @@
 /***
  TODO:
-	 - Finish Readme (description and screenshots)
-     - Error testing and handling (and messages for the user)
+  - Organize constructor()
+  - Finish Readme (description and screenshots)
+  - Error testing and handling (and messages for the user)
+  - Merge existing locations
   - Location
      - Get user's current location
      - Fix popup for search results (same city twice)
-     - Use locale and languages.
 	 - Local time and time where you are.
   - Weather
      - Average weather / day?
@@ -18,7 +19,6 @@
      - Set background of card to reflect weather conditions.
   - Bugs
 	 - Changing the unitSystem doesn't repaint the window.
-  - Merge existing locations
  ***/
 
 let weather;
@@ -73,6 +73,7 @@ class Weather {
 		cacheSettings:    'settingsData',     // Cache settings name for localStorage.
 		cacheWeatherExp:  60 * 60 * 1000,     // In milliseconds [1 hour].
 		geoLimit:         5,    // Maximum location options from OpenWeatherMaps is 5.
+		language:         undefined,
 		iconURL:          'https://openweathermap.org/img/wn/', // URL for OpenWeather's icons.
 		similarAccuracy:  .1,   // Difference in distance for two places with the names to be considered the same place.
 		tempAccuracy:     2,    // Decimal accuracy for temperature.
@@ -106,16 +107,24 @@ class Weather {
 
 		this.languages       = languages;
 		this.settings.apiKey = openWeatherMap.apiKey;
+		//  Load site cache.
+		this.apiCacheLoad();
 
+		// Clock
 		setInterval(() => {
 			this.elements.clock.textContent = dayjs().format('HH:mm:ss');
 		}, 1000);
+
+		// Languages
+		this.languageBuildMenu();
+		this.languageSet(this.settings.language ?? this.languages.English);
+
 
 		// Units Menu Build
 		Object.keys(this.settings.units).forEach(unit => {
 			const unitElement = this.templates.settingsItem.cloneNode(true).firstElementChild;
 
-			unitElement.textContent  = unit;
+			unitElement.textContent  = this.languageText('labels', unit);
 			unitElement.dataset.unit = unit;
 			unitElement.addEventListener('click', (event) => {
 				this.settings.unitSystem = event.target.dataset.unit;
@@ -123,10 +132,6 @@ class Weather {
 			});
 			this.elements.settingsUnitsList.appendChild(unitElement);
 		});
-
-		this.languageBuildMenu();
-
-		this.apiCacheLoad();
 
 		this.elements.locationSearchButton.addEventListener('click', this.actionUserLocationLookup.bind(this));
 	}
@@ -247,10 +252,10 @@ class Weather {
 		apiData.getWind       = (key) => {
 			// Return
 			return (key === 'both')
-			       // BOTH the wind speed, and direction,
+				// BOTH the wind speed, and direction,
 			       ? this.convertDistance(apiData.wind.speed) + '/h ' + this.convertDirection(apiData.wind.direction)
 
-				   // OR the direction, OR the distance.
+				// OR the direction, OR the distance.
 			       : (key === 'direction') ? this.convertDirection(apiData.wind[key])
 			                               : this.convertDistance(apiData.wind[key]) + '/h';
 		};
@@ -403,6 +408,8 @@ class Weather {
 
 			// Set the icon for the time block.
 			timeCard.querySelector('.card__item--icon').src = forecast.weather.iconURL;
+			timeCard.querySelector('.card__item--icon').alt = forecast.weather.description;
+
 
 			// Set the time (format: 12am), current temperature, humidity, and wind speed/direction.
 			timeCard.querySelector('.card__item--time').textContent     = dayjs.unix(forecast.timestamp).format('ha');
@@ -412,10 +419,10 @@ class Weather {
 			timeCard.querySelector('.card__item--wind').textContent     = forecast.getWind('both');
 
 			// Set the data-label attributes for CSS to fill in. This is mostly for translation purposes.
-			timeCard.querySelector('.card__item--humidity').dataset.label = 'Humidity';
-			timeCard.querySelector('.card__item--pressure').dataset.label = 'Pressure';
-			timeCard.querySelector('.card__item--temp').dataset.label     = 'Temp';
-			timeCard.querySelector('.card__item--wind').dataset.label     = 'Wind';
+			timeCard.querySelector('.card__item--humidity').dataset.label = this.languageText('labels', 'humidity');
+			timeCard.querySelector('.card__item--pressure').dataset.label = this.languageText('labels', 'pressure');
+			timeCard.querySelector('.card__item--temp').dataset.label     = this.languageText('labels', 'temp');
+			timeCard.querySelector('.card__item--wind').dataset.label     = this.languageText('labels', 'wind');
 
 			return timeCard;
 		};
@@ -443,27 +450,59 @@ class Weather {
 	}
 
 	/***
-	 * Location Functions
+	 * Language Functions
 	 ***/
 
 	languageBuildMenu() {
 		Object.values(this.languages).forEach(language => {
+			// Clone the settings item, and create an image.
 			const languageItem = this.templates.settingsItem.cloneNode(true).firstElementChild;
+			const languageIcon = document.createElement('img');
 
-			languageItem.textContent = language.abbr;
+			// Set the source and description from the language object, and add a language class.
+			languageIcon.src = language.icon;
+			languageIcon.alt = language.description;
+			languageIcon.classList.add('settings__item--language');
 
+			// Add the child to the settings item, and then attach an event listener.
+			languageItem.appendChild(languageIcon);
 			languageItem.addEventListener('click', this.languageSet.bind(this, language));
 
+			// Add the settings item to the DOM.
 			this.elements.settingsLanguageList.appendChild(languageItem);
 		});
 	}
 
-	languageLabel(key) {
-		// TODO: This.
+	languageText(key, subkey) {
+		try {
+			// Return the language text.
+			return this.settings.language[key][subkey];
+		} catch (error) {
+			// Log the error. The language text must exist to continue operation.
+			console.log(error);
+			throw new Error("Failed to access language settings");
+		}
 	}
 
 	languageSet(language) {
+		// Remove any locale script, if there is one.
+		document.querySelector(`script[src="${language.dayjs}"]`)?.remove();
+		// Set the current language, and save the settings.
+		this.settings.language = language;
+		this.apiCacheSave();
 
+		// Toggle the active class on the selected language, and remove it from the others.
+		[...this.elements.settingsLanguageList.children].forEach(child =>
+			child.classList.toggle('active', language.description === child.firstElementChild.alt));
+
+		// If there's a locale script, load it. English doesn't have one.
+		if (language.dayjs) {
+			const scriptElement  = document.createElement('script');
+			scriptElement.src    = language.dayjs;
+			scriptElement.onload = () => dayjs.locale(language.locale);
+			// Add the script element to the DOM.
+			document.body.appendChild(scriptElement);
+		}
 	}
 
 	/***
@@ -636,7 +675,6 @@ class Weather {
 			// Fill the URL string with parameters.
 			url.search = new URLSearchParams(urlSearch);
 
-			// TODO: THE LAST PART TO REWRITE IS FROM HERE TO THE END OF THE FUNCTION.
 			// Search for the cached data, and if it's found, load it.
 			if (locationData = this.data.location.find(cacheTest)) locationData.select();
 
@@ -710,9 +748,10 @@ class Weather {
 		// Set the location name, and weather icon.
 		weatherElement.querySelector('.weather__item--location').textContent = locationData.city;
 		weatherElement.querySelector('.weather__item--icon').src             = weatherData.weather.iconURL;
+		weatherElement.querySelector('.weather__item--icon').alt             = weatherData.weather.description;
 
 		// Set the text content for the weather data.
-		weatherElement.querySelector('.weather__item--feels-like').textContent  = weatherData.getTemp('feelsLike');
+		weatherElement.querySelector('.weather__item--feels-like').textContent = weatherData.getTemp('feelsLike');
 		weatherElement.querySelector('.weather__item--humidity').textContent   = weatherData.humidity ?? '';
 		weatherElement.querySelector('.weather__item--max').textContent        = weatherData.getTemp('max');
 		weatherElement.querySelector('.weather__item--min').textContent        = weatherData.getTemp('min');
@@ -723,14 +762,14 @@ class Weather {
 
 
 		// Set the data-label attributes for CSS to fill in. This is mostly for translation purposes.
-		weatherElement.querySelector('.weather__item--feels-like').dataset.label  = 'Feels Like';
-		weatherElement.querySelector('.weather__item--humidity').dataset.label   = 'Humidity';
-		weatherElement.querySelector('.weather__item--max').dataset.label        = 'Max';
-		weatherElement.querySelector('.weather__item--min').dataset.label        = 'Min';
-		weatherElement.querySelector('.weather__item--pressure').dataset.label   = 'Pressure';
-		weatherElement.querySelector('.weather__item--temp').dataset.label       = 'Temp';
-		weatherElement.querySelector('.weather__item--wind').dataset.label       = 'Wind';
-		weatherElement.querySelector('.weather__item--visibility').dataset.label = 'Visibility';
+		weatherElement.querySelector('.weather__item--feels-like').dataset.label = this.languageText('labels', 'feelsLike');
+		weatherElement.querySelector('.weather__item--humidity').dataset.label   = this.languageText('labels', 'humidity');
+		weatherElement.querySelector('.weather__item--max').dataset.label        = this.languageText('labels', 'max');
+		weatherElement.querySelector('.weather__item--min').dataset.label        = this.languageText('labels', 'min');
+		weatherElement.querySelector('.weather__item--pressure').dataset.label   = this.languageText('labels', 'pressure');
+		weatherElement.querySelector('.weather__item--temp').dataset.label       = this.languageText('labels', 'temp');
+		weatherElement.querySelector('.weather__item--wind').dataset.label       = this.languageText('labels', 'wind');
+		weatherElement.querySelector('.weather__item--visibility').dataset.label = this.languageText('labels', 'visibility');
 	}
 
 	// Updates the weather from OpenWeatherMap API,

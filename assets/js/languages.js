@@ -1,9 +1,10 @@
 const languages = {
 	English: {
-		abbr:   'EN',
-		errors: {},
-		icon:   '',
-		labels: {
+		abbr:        'EN',
+		description: 'English',
+		errors:      {},
+		icon:        './assets/images/USA.webp',
+		labels:      {
 			feelsLike:   'Feels Like',
 			humidity:    'Humidity',
 			imperial:    'Imperial',
@@ -17,23 +18,24 @@ const languages = {
 			wind:        'Wind',
 			visibility:  'Visibility'
 		},
-		locale: 'en-US'
+		locale:      'en-US'
 	},
 	French:  {
-		abbr:   'FR',
-		dayjs:  'https://cdn.jsdelivr.net/npm/dayjs@1.11/locale/fr.js',
-		errors: {
-			coordsInvalid: "Ces coordonnées ne sont pas valides",
-			inputInvalid:  "Cette entrée n'est pas valide."
+		abbr:        'FR',
+		dayjs:       'https://cdn.jsdelivr.net/npm/dayjs@1.11/locale/fr.js',
+		description: 'Français',
+		errors:      {
+			coordsInvalid: 'Ces coordonnées ne sont pas valides',
+			inputInvalid:  'Cette entrée n\'est pas valide.'
 		},
-		icon:   '',
-		labels: {
-			feelsLike:   "Ressenti",
-			humidity:    "Humidité",
-			imperial:    'Impérial',
-			max:         "Max",
+		icon:        './assets/images/France.webp',
+		labels:      {
+			feelsLike:   'Ressenti',
+			humidity:    'Humidité',
+			imperial:    'impérial',
+			max:         'Max',
 			metric:      'Métrique',
-			min:         "Min",
+			min:         'Min',
 			pressure:    'Pression',
 			scientific:  'Scientifique',
 			searchLabel: 'Ville, État, Pays, Zip ou Lat/Lon',
@@ -41,17 +43,18 @@ const languages = {
 			wind:        'Vent',
 			visibility:  'Visibilité'
 		},
-		locale: 'fr-FR'
+		locale:      'fr-FR'
 	},
 	German:  {
-		abbr:   'DE',
-		dayjs:  'https://cdn.jsdelivr.net/npm/dayjs@1.11/locale/de.js',
-		errors: {
-			coordsInvalid: "Dies sind keine gültigen Koordinaten.",
-			inputInvalid:  "Dies ist keine gültige Eingabe."
+		abbr:        'DE',
+		dayjs:       'https://cdn.jsdelivr.net/npm/dayjs@1.11/locale/de.js',
+		description: 'Deutsch',
+		errors:      {
+			coordsInvalid: 'Dies sind keine gültigen Koordinaten.',
+			inputInvalid:  'Dies ist keine gültige Eingabe.'
 		},
-		icon:   '',
-		labels: {
+		icon:        './assets/images/Germany.webp',
+		labels:      {
 			feelsLike:   'Fühlt sich an wie',
 			humidity:    'Luftfeuchtigkeit',
 			imperial:    'imperial',
@@ -65,17 +68,18 @@ const languages = {
 			wind:        'Wind',
 			visibility:  'Sichtbarkeit'
 		},
-		locale: 'de-DE'
+		locale:      'de-DE'
 	},
 	Spanish: {
-		abbr:   'ES',
-		dayjs:  'https://cdn.jsdelivr.net/npm/dayjs@1.11/locale/es.js',
-		errors: {
-			coordsInvalid: "Estas coordenadas no son válidas",
-			inputInvalid:  "Esta entrada no es válida"
+		abbr:        'ES',
+		dayjs:       'https://cdn.jsdelivr.net/npm/dayjs@1.11/locale/es.js',
+		description: 'Español',
+		errors:      {
+			coordsInvalid: 'Estas coordenadas no son válidas',
+			inputInvalid:  'Esta entrada no es válida'
 		},
-		icon:   '',
-		labels: {
+		icon:        './assets/images/Spain.webp',
+		labels:      {
 			feelsLike:   'Se siente como',
 			humidity:    'Humedad',
 			imperial:    'Imperial',
@@ -89,6 +93,6 @@ const languages = {
 			wind:        'Viento',
 			visibility:  'Visibilidad'
 		},
-		locale: 'es-ES'
+		locale:      'es-ES'
 	}
-}
+};

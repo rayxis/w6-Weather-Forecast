@@ -11,14 +11,15 @@
 	<body>
 		<header class="page-header">
 			<h1 class="page-header__title">Weather Forecast</h1>
-			<div class="settings">
+			<section class="settings">
 				<ul class="settings__list settings__list--language"></ul>
 				<ul class="settings__list settings__list--units"></ul>
-			</div>
+			</section>
 			<form class="search">
 				<ul class="search__list"></ul>
 				<fieldset class="search__container">
-					<input class="search__input" id="place" name="place" placeholder="Enter a location" type="text"/>
+					<input class="search__input" id="place" name="place" placeholder="Enter a location"
+					       type="text"/>
 					<button class="search__button">Go</button>
 					<label class="search__label" for="place">City, State, Country, Zip or Lat/Lon</label>
 					<ul class="search__list search__list--location-options"></ul>
@@ -94,7 +95,6 @@
 
 		<script src="https://cdn.jsdelivr.net/npm/dayjs@1.11/dayjs.min.js"
 		        integrity="sha256-nP25Pzivzy0Har7NZtMr/TODzfGWdlTrwmomYF2vQXM=" crossorigin="anonymous"></script>
-		<script src="https://cdn.jsdelivr.net/npm/dayjs@1.11/locale/fr.js"></script>
 		<script src="./assets/js/languages.js"></script>
 		<script src="./assets/js/secret.js"></script>
 		<script src="assets/js/Weather.js"></script>
