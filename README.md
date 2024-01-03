@@ -8,9 +8,19 @@ selected location in the world.
 It starts off by pulling language data, which has been stored in a JavaScript file (./assets/js/languages.js), and API
 key (./assets/js/secret.js) for use with OpenWeatherMap's API. The script will then check if any cache is available.
 
-The script pulls location data from the API server, and reorganizes the returned objects into a more structured object.
-The script organizes location, current weather and forecast data within the same object, and each object is stored in an
-array, which is cached in localStorage whenever any changes or updates are made.
+The script pulls location data from the API server, and reorganizes the returned objects into a more structured object
+that can be worked with for the purposes of the application. The script organizes location, current weather and forecast
+data within the same object, to make it easier for organizational purposes. Each location object (and weather/forecast
+item therein) has several functions which make loading data easier, completing conversions from imperial to metric or
+"scientific" (Kelvin, with a metric twist).
+
+The objects are stored in an array, which is cached in localStorage whenever any changes or updates are made. Settings
+are also cached in localStorage, which will help user preferences to persist beyond the current session. These settings
+include language preference, and unit measurement preference. Because you cannot store functions in a stringified
+object, care has been taken to ensure that functions are added separate from object creation in order to make
+rebuilding (adding the functions again) an easier process.
+
+
 
 ## Installation
 

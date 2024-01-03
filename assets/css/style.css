@@ -13,22 +13,23 @@
 }
 
 body {
+  position: relative;
+  background-color: midnightblue;
+  font-family: sans-serif;
   font-size: 88%;
 }
 
 .page-header {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: space-between;
-  background-color: midnightblue;
+  align-items: center;
+  padding: 0 10px;
   color: white;
 }
 .page-header__title {
-  flex: 1 1 50%;
-  padding: 1rem;
   font-family: Oswald, sans-serif;
   font-size: 2rem;
-  font-style: italic;
   font-weight: lighter;
 }
 
@@ -36,7 +37,7 @@ body {
   display: flex;
   flex-flow: column nowrap;
   align-items: flex-end;
-  padding: 0.5rem;
+  padding: 10px;
 }
 .settings__list {
   display: flex;
@@ -61,56 +62,74 @@ body {
   height: 1rem;
 }
 
-.search {
-  display: flex;
-  flex-flow: column nowrap;
-  padding: 1rem;
-  margin: auto;
-}
-.search__button {
-  padding: 0.25rem 0.5rem;
-  border-radius: 0 1rem 1rem 0;
-}
-.search__container {
-  display: flex;
-  flex-flow: row wrap;
-  border: none;
-  width: auto;
-}
-.search__input {
-  padding: 0.25rem 0.75rem;
-  border-radius: 1rem 0 0 1rem;
-}
-.search__label {
-  font-size: 0.7rem;
-}
-.search__list {
-  padding: 1rem;
-}
-
 .forecast {
+  position: relative;
   display: flex;
-  flex-flow: row wrap;
+  gap: 1rem;
+  flex-flow: column;
+  align-items: flex-end;
+  justify-content: center;
+  height: 100vh;
+  padding: 1rem;
 }
 
 .weather {
-  display: flex;
-  flex-flow: row wrap;
-  flex: 1 1 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  padding: 25px;
+  z-index: 1;
+  color: white;
+}
+.weather__item::before {
+  display: inline-block;
+  content: attr(data-label);
+}
+.weather__item--location {
+  font-family: Oswald, sans-serif;
+  font-size: 3rem;
 }
 
 .card {
   display: flex;
-  flex-flow: column;
+  width: 15rem;
+  border-radius: 1rem;
+}
+.card__header {
+  font-style: italic;
+  padding: 0.5rem;
+}
+.card__item--humidity, .card__item--pressure, .card__item--time, .card__item--wind {
+  display: none;
+}
+.card__item--temp {
+  font-size: 2rem;
+}
+.card--day {
+  z-index: 2;
+  flex-flow: column-reverse nowrap;
+  color: white;
+  background-color: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.5);
+  transition: transform 0.25s ease, background-color 0.25s ease, box-shadow 0.25s ease;
+}
+.card--day:hover {
+  z-index: 3;
+  transform: scale(1.1);
+  background-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+}
+.card--time {
+  display: flex;
+  flex-flow: row-reverse nowrap;
+  align-items: center;
   list-style: none;
 }
-.card__item::before {
-  display: inline-block;
-  content: attr(data-label);
-  width: 4rem;
-}
-
-.hideEmpty:empty {
+.card--time:not(:first-of-type) {
   display: none;
 }
 

@@ -2,9 +2,14 @@ const languages = {
 	English: {
 		abbr:        'EN',
 		description: 'English',
-		errors:      {},
-		icon:        './assets/images/USA.webp',
-		labels:      {
+		// Error messages
+		errors: {
+			coordsInvalid: 'These are not valid coordinates',
+			inputInvalid:  'This is not valid input.',
+			networkError:  'Network error'
+		},
+		icon:   './assets/images/USA.webp',
+		labels: {
 			feelsLike:    'Feels Like',
 			humidity:     'Humidity',
 			imperial:     'Imperial',
@@ -21,7 +26,7 @@ const languages = {
 			wind:         'Wind',
 			visibility:   'Visibility'
 		},
-		locale:      'en-US'
+		locale: 'en-US'
 	},
 	French:  {
 		abbr:        'FR',

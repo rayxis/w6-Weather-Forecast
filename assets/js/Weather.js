@@ -10,15 +10,14 @@
 	 - Local time and time where you are.
   - Weather
      - Average weather / day?
+	 - Temperature precision as a setting
   - Design
      - Scalable
      - Header
      - Display the time.
      - Location Section
      - Weather Section
-     - Set background of card to reflect weather conditions.
-  - Bugs
-	 - Changing the settings doesn't repaint the window.
+     - Set background color to reflect weather conditions / daytime. Maybe background of cards can be a weather image.
  ***/
 
 let weather;
@@ -34,26 +33,22 @@ class Weather {
 	};
 	//  Data storage
 	data      = {
-		location:            [],
-		locationListOptions: []
+		location:            [],    // Location object storage
+		functions:           {}     // Event handler function storage
 	};
 	//  Element references
 	elements  = {
 		clock:                document.querySelector('.weather__item--time'),
 		forecastList:         document.querySelector('.forecast'),
-		locationList:         document.querySelector('.search__list'),
+		locationList:         document.querySelector('.search__list--location'),
 		locationListOptions:  document.querySelector('.search__list--location-options'),
 		locationSearchButton: document.querySelector('.search__button'),
 		locationSearchInput:  document.querySelector('.search__input'),
 		locationSearchLabel:  document.querySelector('.search__label'),
+		pageHeader:           document.querySelector('.page-header'),
 		settingsLanguageList: document.querySelector('.settings__list--language'),
 		settingsUnitsList:    document.querySelector('.settings__list--units'),
 		weather:              document.querySelector('.weather')
-	};
-	// Error messages
-	errors    = {
-		coordsInvalid: 'These are not valid coordinates.',
-		inputInvalid:  'This is not valid input.'
 	};
 	// Store language data
 	languages = {};
@@ -73,6 +68,7 @@ class Weather {
 		cacheLocation:    'locationData',     // Cache location name for localStorage.
 		cacheSettings:    'settingsData',     // Cache settings name for localStorage.
 		cacheWeatherExp:  60 * 60 * 1000,     // In milliseconds [1 hour].
+		clockMode:        'h:mm a',           // Clock mode
 		geoLimit:         5,    // Maximum location options from OpenWeatherMaps is 5.
 		language:         undefined,
 		iconURL:          'https://openweathermap.org/img/wn/', // URL for OpenWeather's icons.
@@ -96,6 +92,7 @@ class Weather {
 	};
 	//  Element template references
 	templates = {
+		alert:               document.getElementById('alert').content,
 		dayCard:             document.getElementById('day-card').content,
 		locationListOptions: document.getElementById('location-option').content,
 		locationItem:        document.getElementById('location-item').content,
@@ -106,59 +103,26 @@ class Weather {
 	constructor() {
 		weather = this;
 
-		this.languages       = languages;
 		this.settings.apiKey = openWeatherMap.apiKey;
 		//  Load site cache.
 		this.apiCacheLoad();
 
 		// Clock
 		setInterval(() => {
-			this.elements.clock.textContent = dayjs().format('HH:mm:ss');
+			this.elements.clock.textContent = dayjs().format(this.settings.clockMode);
 		}, 1000);
 
-		// Languages
-		this.languageBuildMenu();
+		// Setup Languages (this will also run this.unitMenuBuild() since it has to be rebuilt on translation).
+		this.languages = languages;
+		this.languageMenuBuild();
 		this.languageSet(this.settings.language ?? this.languages.English);
 
-		// Units Menu Build
-		Object.keys(this.settings.units).forEach(unit => {
-			const unitElement = this.templates.settingsItem.cloneNode(true).firstElementChild;
-
-			unitElement.textContent  = this.languageText('labels', unit);
-			unitElement.dataset.unit = unit;
-			unitElement.addEventListener('click', (event) => {
-				this.settings.unitSystem = event.target.dataset.unit;
-				this.apiCacheSave();
-			});
-			this.elements.settingsUnitsList.appendChild(unitElement);
+		// Save the function, and add event handler.
+		this.clickEventSave(this.elements.locationSearchButton, 'userLocationLookup', (event) => {
+			event.preventDefault();
+			//  Search for the user-specified location.
+			this.locationLookup(this.elements.locationSearchInput.value);
 		});
-
-		this.elements.locationSearchButton.addEventListener('click', this.actionUserLocationLookup.bind(this));
-	}
-
-	/***
-	 * User Action Functions
-	 ***/
-
-	// User Action: Select a location from a list of optional locations based off multiple returns from a
-	// locationLookup() search.
-	actionLocationListOptionsSelect(locationOption, event) {
-		// Remove event handlers from all the children, and clear the list.
-		[...this.elements.locationListOptions.children].forEach(child => {
-			child.removeEventListener('click', this.data.locationListOptions.shift());
-			child.remove();
-		});
-
-		// Rebuild the location object by using the referenced location index, then update the history.
-		this.locationBuild(locationOption);
-		this.locationListUpdate();
-	}
-
-	// User Action: Search for a location, with a proper format.
-	actionUserLocationLookup(event) {
-		event.preventDefault();
-		//  Search for the user-specified location.
-		this.locationLookup(this.elements.locationSearchInput.value);
 	}
 
 	/***
@@ -197,10 +161,10 @@ class Weather {
 	// Rebuild the weather objects.
 	apiDataBuild(apiData) {
 		// This creates a new weather data object and returns it.
-		const objectBuild = (apiData) => {
+		const objectBuild = apiData => {
 			// Rebuild the weather API object.
 			return {
-				humidity:   apiData.main.humidity + ' %',
+				humidity:   apiData.main.humidity + '%',
 				pressure:   apiData.main.pressure + ' hPa',
 				timestamp:  apiData.dt,
 				timezone:   apiData.timezone / 3600 ?? '',
@@ -243,13 +207,13 @@ class Weather {
 	apiDataRebuild(apiData) {
 		let weatherClass = this;
 
-		apiData.getTemp       = (key) => {
+		apiData.getTemp       = key => {
 			return this.convertTemp(apiData.temp[key]);
 		};
 		apiData.getVisibility = () => {
 			return this.convertDistance(apiData.visibility);
 		};
-		apiData.getWind       = (key) => {
+		apiData.getWind       = key => {
 			// Return
 			return (key === 'both')
 				// BOTH the wind speed, and direction,
@@ -271,12 +235,12 @@ class Weather {
 
 			// TODO: Better error handling here.
 			// If the response is not okay, throw an error.
-			if (!response.ok) throw new Error('Network error');
+			if (!response.ok) throw new Error('networkError');
 
 			// If a callback was provided, return the value from that, otherwise return the parsed response.
 			else return callback ? response.json().then(response => callback(response)) : response.json();
 		} catch (error) {
-			// TODO: Handle errors.
+			this.alertUser(this.languageText('error', error));
 		}
 	}
 
@@ -286,7 +250,7 @@ class Weather {
 		if (apiName === 'forecast') {
 			cacheName = 'cacheForecast';
 			dataName  = 'forecastData';
-		} else if (apiName !== 'weather') {
+		} else if (apiName === 'weather') {
 			cacheName = 'cacheWeather';
 			dataName  = 'weatherData';
 		} else return false;
@@ -306,7 +270,7 @@ class Weather {
 			                                 });
 
 			// Pull the weather request from the API, and rebuild the response object.
-			await this.apiFetchJSON(url.href, (apiData) => {
+			await this.apiFetchJSON(url.href, apiData => {
 				locationData[dataName] = this.apiDataBuild(apiData);
 				// Rebuild the response object, and if valid data was received, set the cache expiration.
 				if (locationData[dataName])
@@ -343,7 +307,7 @@ class Weather {
 	}
 
 	// Convert distance units from kilometers.
-	convertDistance(distance) {
+	convertDistance(distance, incUnits = true) {
 		// Check that the distance is a number.
 		if (isNaN(+distance)) return false;
 
@@ -358,11 +322,15 @@ class Weather {
 		// Round up to the specified amount of decimals.
 		distance = Number(distance.toFixed(this.settings.distanceAccuracy));
 		// Return the result.
-		return `${distance} ${this.settings.units[this.settings.unitSystem].distance}`;
+
+		// Including units on the end?
+		if (incUnits) distance += ` ${this.settings.units[this.settings.unitSystem].distance}`;
+
+		return distance;
 	}
 
 	// Convert original temperature unit (Kelvin) to the preferred unit (Celsius|Fahrenheit).
-	convertTemp(temp) {
+	convertTemp(temp, incUnits = true) {
 		// Check that the temperature is a number.
 		if (isNaN(+temp)) return false;
 		else {
@@ -372,7 +340,7 @@ class Weather {
 			if (this.settings.unitSystem === 'imperial') temp = 1.8 * temp + 32;
 
 			//  Return the result with units.
-			return Number(temp.toFixed(2)) + this.settings.units[this.settings.unitSystem].temp;
+			return Number(temp.toFixed(2)) + (incUnits) ? this.settings.units[this.settings.unitSystem].temp : '';
 		}
 	}
 
@@ -386,7 +354,7 @@ class Weather {
 		if (!locationData.forecastData) return false;
 
 		// Day builder function.
-		const dayBuild = (dayData) => {
+		const dayBuild = dayData => {
 			// Clone the day card element.
 			const dayCard = this.templates.dayCard.cloneNode(true).firstElementChild;
 			let day       = dayjs(dayData[0].timestamp * 1000);
@@ -398,18 +366,25 @@ class Weather {
 			// Loop through the time blocks and add them to the days.
 			dayData.forEach(dayData => dayCard.appendChild(timeBuild(dayData)));
 
+			// TODO: Finish.
+			// Build an average
+			const dayAverage = {
+				temp: dayData.reduce((total, forecast) => total + forecast.temp) / dayData.length,
+				max:  [...dayData].sort((a, b) => b.temp - a.temp)[0],
+				min:  [...dayData].sort((a, b) => a.temp - b.temp)[0]
+			};
+
 			return dayCard;
 		};
 
 		// Time block builder function
-		const timeBuild = (forecast) => {
+		const timeBuild = forecast => {
 			// Clone the time card
 			const timeCard = this.templates.timeCard.cloneNode(true).firstElementChild;
 
 			// Set the icon for the time block.
 			timeCard.querySelector('.card__item--icon').src = forecast.weather.iconURL;
 			timeCard.querySelector('.card__item--icon').alt = forecast.weather.description;
-
 
 			// Set the time (format: 12am), current temperature, humidity, and wind speed/direction.
 			timeCard.querySelector('.card__item--time').textContent     = dayjs.unix(forecast.timestamp).format('ha');
@@ -437,7 +412,7 @@ class Weather {
 	// Updates the forecast from OpenWeatherMap API,
 	async forecastUpdate(locationData) {
 		// Get updated forecast data from the API.
-		await this.apiUpdate('forecast', locationData, (locationData) => {
+		await this.apiUpdate('forecast', locationData, locationData => {
 
 			// Loop through each weather object and add functions to new data, or previously cached data where they
 			// would have been destroyed.
@@ -453,7 +428,7 @@ class Weather {
 	 * Language Functions
 	 ***/
 
-	languageBuildMenu() {
+	languageMenuBuild() {
 		Object.values(this.languages).forEach(language => {
 			// Clone the settings item, and create an image.
 			const languageItem = this.templates.settingsItem.cloneNode(true).firstElementChild;
@@ -475,12 +450,15 @@ class Weather {
 
 	languagePage() {
 		// Page title
-		document.title = this.languageText('labels','title');
-		document.querySelector('.page-header__title').textContent = this.languageText('labels','title');
+		document.title                                            = this.languageText('labels', 'title');
+		document.querySelector('.page-header__title').textContent = this.languageText('labels', 'title');
 		// Form texts
-		this.elements.locationSearchButton.textContent = this.languageText('labels', 'searchButton');
-		this.elements.locationSearchLabel.textContent  = this.languageText('labels', 'searchLabel');
-		this.elements.locationSearchInput.placeholder  = this.languageText('labels', 'searchInput');
+		this.elements.locationSearchButton.textContent            = this.languageText('labels', 'searchButton');
+		this.elements.locationSearchLabel.textContent             = this.languageText('labels', 'searchLabel');
+		this.elements.locationSearchInput.placeholder             = this.languageText('labels', 'searchInput');
+		// Update the data presentation.
+		this.unitMenuBuild();
+		this.locationUpdate();
 	}
 
 	languageSet(language) {
@@ -491,8 +469,8 @@ class Weather {
 		this.apiCacheSave();
 
 		// Toggle the active class on the selected language, and remove it from the others.
-		[...this.elements.settingsLanguageList.children].forEach(child =>
-			                                                         child.classList.toggle('active', language.description === child.firstElementChild.alt));
+		[...this.elements.settingsLanguageList.children]
+			.forEach(child => child.classList.toggle('active', language.description === child.firstElementChild.alt));
 
 		// If there's a locale script, load it. English doesn't have one.
 		if (language.dayjs) {
@@ -502,17 +480,16 @@ class Weather {
 			// Add the script element to the DOM.
 			document.body.appendChild(scriptElement);
 		}
+		// Update the page with the new language selection.
 		this.languagePage();
 	}
 
-	languageText(key, subkey) {
+	languageText(key, subKey) {
 		try {
 			// Return the language text.
-			return this.settings.language[key][subkey];
+			return this.settings.language[key][subKey];
 		} catch (error) {
-			// Log the error. The language text must exist to continue operation.
-			console.log(error);
-			throw new Error('Failed to access language settings');
+			this.alertUser('Missing language settings.');
 		}
 	}
 
@@ -553,8 +530,14 @@ class Weather {
 		this.locationRebuild(location);
 	}
 
-	// Gets the user's current location, if they allow.
+	// Gets the user's current location.
 	locationCurrent() {
+		navigator.geolocation.getCurrentPosition(position => {
+			this.locationLookup(`${position.coords.latitude}, ${position.coords.longitude}`);
+		}, error => {
+			console.error(error);
+			this.alertUser('Unable to retrieve your location. Please try again later.');
+		});
 		// TODO: This.
 
 	}
@@ -564,7 +547,7 @@ class Weather {
 		const locationList = this.elements.locationListOptions;
 
 		// Build each item of the location options list.
-		const listItemBuild = (location) => {
+		const listItemBuild = location => {
 			const locationOption = this.templates.locationListOptions.cloneNode(true).firstElementChild;
 
 			// TODO: Duplicate code?
@@ -576,10 +559,18 @@ class Weather {
 				(location.state && location.country) ? `${location.state}, ${location.country}`
 				                                     : location.state || location.country || '';
 
-			// Create a click function that can be removed when it's no longer needed, and then use that as
-			const clickFunction = this.actionLocationListOptionsSelect.bind(this, location);
-			this.data.locationListOptions.push(clickFunction);
-			locationOption.addEventListener('click', clickFunction);
+			// Save the function for future removal.
+			this.clickEventSave(locationOption, 'locationListOptions', ((locationOption) => {
+				// Remove event handlers from all the children, and clear the list.
+				[...this.elements.locationListOptions.children].forEach(child => {
+					this.clickEventRemove(child, 'locationListOptions');
+					child.remove();
+				});
+
+				// Rebuild the location object by using the referenced location index, then update the history.
+				this.locationBuild(locationOption);
+				this.locationListUpdate();
+			}).bind(this,  location));
 
 			return locationOption;
 		};
@@ -594,7 +585,7 @@ class Weather {
 		if (!this.data.location.length) return false;
 
 		// This builds the list items for the location history list.
-		const listItemBuild = (location) => {
+		const listItemBuild = location => {
 			// Clone the template and get the first element
 			const locationItem = this.templates.locationItem.cloneNode(true).firstElementChild;
 
@@ -614,10 +605,7 @@ class Weather {
 		};
 
 		// Remove event handlers from all the children, and clear the list.
-		[...this.elements.locationList.children].forEach(location => {
-			location.removeEventListener('click', location.select);
-			location.remove();
-		});
+		this.clickEventRemoveChildren(this.elements.locationList,  location.select);
 
 		// Sort through the locations in descending order, and then loop through them to build the list.
 		this.data.location.sort((a, b) => b.lastAccess - a.lastAccess);
@@ -663,9 +651,8 @@ class Weather {
 
 			} else if (matches = searchData.match(this.regex.coords)) {
 				// Check that the global coordinates are within the valid range {90<=>-90, 180<=>-180}
-				this.messageWarning('coordsInvalid');
 				if (Math.abs(parseFloat(matches[1])) > 90 || Math.abs(parseFloat(matches[2])) > 180)
-					this.messageError('coordsInvalid');
+					this.alertUser('coordsInvalid');
 
 
 				// Get the URL, set the return limit and convert the coordinate accuracy.
@@ -679,7 +666,7 @@ class Weather {
 
 			} else {
 				// Alert the user that there's invalid data.
-				this.messageError('inputInvalid');
+				this.alertUser('inputInvalid');
 				return false;
 			}
 
@@ -746,6 +733,10 @@ class Weather {
 		this.apiCacheSave();
 	}
 
+	locationUpdate() {
+		if (this.data.location.length) this.data.location[0].select();
+	}
+
 	/***
 	 * Weather Functions
 	 ***/
@@ -785,7 +776,7 @@ class Weather {
 
 	// Updates the weather from OpenWeatherMap API,
 	async weatherUpdate(locationData) {
-		await this.apiUpdate('weather', locationData, (locationData) => {
+		await this.apiUpdate('weather', locationData, locationData => {
 			// Add functions to new data, or previously cached data where it would have been destroyed.
 			if (Object.keys(locationData.weatherData).length)
 				this.apiDataRebuild(locationData.weatherData);
@@ -794,8 +785,105 @@ class Weather {
 		});
 	}
 
-	messageError(message) {
+	/***
+	 * Miscellaneous Functions
+	 ***/
 
+	// Alert the user to some sort of issue.
+	alertUser(message) {
+		// Clone the alert
+		const alertElement = this.templates.alert.cloneNode(true).firstElementChild;
+
+		alertElement.firstElementChild.textContent = message;
+		this.elements.pageHeader.insertBefore(alertElement, this.elements.pageHeader.firstElementChild);
+
+		alertElement.classList.add('active');
+
+		// Save the function for future removal.
+		this.clickEventSave(alertElement, 'alert', (event) => {
+			// Remove the event handler when it's clicked on.
+			this.clickEventRemove(alertElement, 'alert');
+			// Remove the element when the user clicks on it.
+			alertElement.remove();
+		});
+	}
+
+	// Save the function for future removal.
+	clickEventSave(element, funcName, func) {
+		// If the functionSave failed, also fail.
+		if (!this.functionSave(funcName, func)) return false;
+
+		// Save the event handler.
+		element.addEventListener('click', func);
+
+		return func;
+	}
+
+	// Remove a click event.
+	clickEventRemove(element, funcName) {
+		// If the function name exists in the array, grab it; otherwise check if it's an actual function, and save that.
+		// This is so that even if the event wasn't created with clickEventSave(), it can still save code.
+		const func = this.data.functions[funcName] ?? (typeof funcName === 'function') ? funcName : false;
+		// If the function is not a function, abort.
+		if (!func) return false;
+
+		// Remove the event listener from the element.
+		element.removeEventListener('click', this.data.functions[funcName]);
+		return true;
+	}
+
+	// Remove all children and their click events from the specified parent element.
+	clickEventRemoveChildren(element, funcName) {
+		[...element.children].forEach(child => {
+			this.clickEventRemove(child, funcName);
+			child.remove();
+		});
+	}
+
+	// Save functions for future reference.
+	functionSave(funcName, func) {
+		try {
+			// If the function is not a function, abort.
+			if (typeof func !== 'function') throw new Error('This is not a function.');
+
+		} catch (error) {
+			console.log(error);
+			return false;
+		}
+
+		// If the function isn't saved, save it.
+		if (!this.data.functions[funcName]) this.data.functions[funcName] = func;
+
+		return func;
+	}
+
+	// Build the unit measurement selection menu.
+	unitMenuBuild() {
+		// Save the event handler function for later so it can be removed.
+		const func = this.functionSave('unitBuildMenu', (event) => {
+			// Toggle the active unit and save it.
+			[...event.target.parentNode.children]
+				.forEach(child => child.classList.toggle('active', child === event.target));
+			this.settings.unitSystem = event.target.dataset.unit;
+			// Update the locations with the new units.
+			this.locationUpdate();
+		});
+
+		// Remove the children and their little event listeners too.
+		this.clickEventRemoveChildren(this.elements.settingsUnitsList, 'unitMenuBuild');
+
+		// Units Menu Build
+		Object.keys(this.settings.units).forEach(unit => {
+			//  Clone the unit item.
+			const unitElement = this.templates.settingsItem.cloneNode(true).firstElementChild;
+
+			// Set the text, save the unit, add an event listener.
+			unitElement.textContent  = this.languageText('labels', unit);
+			unitElement.dataset.unit = unit;
+			unitElement.addEventListener('click', func);
+			// Add the item to the list.
+			this.elements.settingsUnitsList.appendChild(unitElement);
+		});
 	}
 }
 
