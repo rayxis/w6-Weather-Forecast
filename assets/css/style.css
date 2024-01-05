@@ -50,7 +50,7 @@ body {
   border-radius: 1rem;
   transition: transform 0.25s ease;
 }
-.settings__item:hover {
+.settings__item:hover, .settings__item.active:hover {
   cursor: pointer;
   transform: scale(1.75);
 }
@@ -60,6 +60,55 @@ body {
 .settings__item--language {
   width: 1rem;
   height: 1rem;
+}
+
+.search__container {
+  display: grid;
+  grid-template-areas: "input input button" "label label ." "options options .";
+  position: relative;
+  border: none;
+}
+.search__button {
+  grid-area: button;
+  padding: 10px;
+  border: none;
+  border-radius: 0 15px 15px 0;
+}
+.search__input {
+  grid-area: input;
+  padding: 10px;
+  border: none;
+  border-right: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 15px 0 0 15px;
+}
+.search__label {
+  grid-area: label;
+  padding: 5px;
+  font-size: 0.6rem;
+  font-style: italic;
+  text-align: center;
+}
+.search__list--options {
+  grid-area: options;
+}
+.search__item {
+  display: flex;
+  flex-flow: column nowrap;
+}
+.search__item .search__desc {
+  font-family: Oswald, sans-serif;
+}
+.search__item .search__desc--city {
+  font-size: 1.1rem;
+  font-variant: small-caps;
+}
+.search__item .search__desc--stco {
+  font-size: 0.9rem;
+}
+.search__item .search__desc--coords {
+  font-weight: lighter;
+  font-size: 0.7rem;
+  font-style: italic;
 }
 
 .forecast {
@@ -72,29 +121,38 @@ body {
   height: 100vh;
   padding: 1rem;
 }
-
 .weather {
   position: absolute;
   top: 0;
   left: 0;
-  width: 100%;
+  width: 84vw;
   height: 100vh;
   padding: 25px;
+  order: 1;
   z-index: 1;
   color: white;
 }
-.weather__item::before {
+.weather__item[data-label]:not([data-label=""])::before {
   display: inline-block;
   content: attr(data-label);
 }
 .weather__item--location {
+  grid-area: location;
   font-family: Oswald, sans-serif;
   font-size: 3rem;
+}
+.weather__item--time {
+  font-family: Oswald, sans-serif;
+  font-size: 4rem;
+  padding: 25px;
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 15px;
+  width: auto;
 }
 
 .card {
   display: flex;
-  width: 15rem;
+  width: 15vw;
   border-radius: 1rem;
 }
 .card__header {

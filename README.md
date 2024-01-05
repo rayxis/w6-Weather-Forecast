@@ -20,8 +20,6 @@ include language preference, and unit measurement preference. Because you cannot
 object, care has been taken to ensure that functions are added separate from object creation in order to make
 rebuilding (adding the functions again) an easier process.
 
-
-
 ## Installation
 
 Installation is simple in that it requires no special permissions, and simply exporting the website to the root location
@@ -117,6 +115,12 @@ be cached for 3 hours; and the location information will not expire at all since
 their locations.
 
 ## Screenshots
+
+## Credit
+
+* Paul McCaughtry helped with the idea to use a separate array to compare duplicate return cities from the OpenWeatherMap
+API.
+* 
 
 ## User Story
 

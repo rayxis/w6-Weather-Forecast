@@ -12,11 +12,13 @@
 	--popup-bg-color-hover:  rgba(0, 0, 0, 0.3);
 }
 
+$border-radius:     15px;
 $header-bg-color:   midnightblue;
 $header-font:       Oswald, sans-serif;
 $header-text-color: white;
 $padding-medium:    10px;
 $padding-large:     25px;
+$padding-small:     5px;
 $gap-small:         5px;
 
 body {
@@ -66,7 +68,8 @@ body {
 
 		transition:    transform .25s ease;
 
-		&:hover {
+		&:hover,
+		&.active:hover {
 			cursor:    pointer;
 			transform: scale(1.75);
 		}
@@ -84,7 +87,78 @@ body {
 
 
 .search {
-	//display: none;
+	&__container {
+		display:  grid;
+
+		grid-template-areas:
+			"input input button"
+			"label label ."
+			"options options .";
+
+		position: relative;
+		border:   none;
+	}
+
+	&__button {
+		grid-area:     button;
+
+		padding:       $padding-medium;
+		border:        none;
+		border-radius: 0 $border-radius $border-radius 0;
+	}
+
+	&__input {
+		grid-area:     input;
+
+		padding:       $padding-medium;
+		border:        none;
+		border-right:  1px solid rgba(0, 0, 0, 0.2);
+		border-radius: $border-radius 0 0 $border-radius;
+	}
+
+	&__label {
+		grid-area:  label;
+
+		padding:    $padding-small;
+		font-size:  0.6rem;
+		font-style: italic;
+		text-align: center;
+	}
+
+	&__list {
+		//display: flex;
+	}
+
+	&__list--options {
+		grid-area: options;
+	}
+
+	&__list-location {
+
+	}
+}
+
+.search__item {
+	display:   flex;
+	flex-flow: column nowrap;
+
+	.search__desc {
+		font-family: Oswald, sans-serif;
+		&--city {
+			font-size:   1.1rem;
+			font-variant: small-caps;
+		}
+
+		&--stco {
+			font-size: 0.9rem;
+		}
+
+		&--coords {
+			font-weight: lighter;
+			font-size: 0.7rem;
+			font-style: italic;
+		}
+	}
 }
 
 .alert {
@@ -100,36 +174,57 @@ body {
 	justify-content: center;
 	height:          100vh;
 	padding:         1rem;
+
+	.active:only-child {
+		// TODO: Change the main card with this, using what's in .weather. I will need to find a way to link,
+		//  .card--day and .weather. Maybe I can just use .card--day, .weather; or maybe I need to add a card class to
+		//  .weather.
+	}
 }
 
 .weather {
+	//display: grid;
+
+
 	position: absolute;
 	top:      0;
 	left:     0;
-	width:    100%;
+	width:    84vw;
 	height:   100vh;
 	padding:  $padding-large;
+	order:    1;
 	z-index:  1;
 
 	color:    white;
 
 	&__item {
 
-		&::before {
+		&[data-label]:not([data-label=""])::before {
 			display: inline-block;
 			content: attr(data-label);
 		}
 
 		&--location {
+			grid-area:   location;
 			font-family: $header-font;
 			font-size:   3rem;
+		}
+
+		&--time {
+			font-family:      $header-font;
+			font-size:        4rem;
+			padding:          $padding-large;
+
+			background-color: rgba(0, 0, 0, 0.5);
+			border-radius:    15px;
+			width:            auto;
 		}
 	}
 }
 
 .card {
 	display:       flex;
-	width:         15rem;
+	width:         15vw;
 
 	border-radius: 1rem;
 
@@ -180,6 +275,12 @@ body {
 		&:first-of-type {
 		}
 	}
+}
+
+.clock {
+	&__date {}
+
+	&__time {}
 }
 
 

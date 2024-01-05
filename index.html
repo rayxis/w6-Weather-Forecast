@@ -11,19 +11,24 @@
 	<body>
 		<header class="page-header">
 			<h1 class="page-header__title">Weather Forecast</h1>
-			<section class="settings">
-				<ul class="settings__list settings__list--language"></ul>
-				<ul class="settings__list settings__list--units"></ul>
-			</section>
+			<!-- Search Form & History -->
 			<form class="search">
 				<fieldset class="search__container">
 					<input class="search__input" id="place" name="place" type="text"/>
 					<button class="search__button"></button>
 					<label class="search__label" for="place"></label>
-					<ul class="search__list search__list--location-options"></ul>
+					<!-- Multiple Location Options -->
+					<ul class="search__list search__list--options"></ul>
 				</fieldset>
+				<!-- Location History -->
 				<ul class="search__list search__list--location"></ul>
 			</form>
+
+			<!-- Settings -->
+			<section class="settings">
+				<ul class="settings__list settings__list--language"></ul>
+				<ul class="settings__list settings__list--units"></ul>
+			</section>
 		</header>
 
 		<main class="forecast">
@@ -51,6 +56,14 @@
 			</section>
 		</template>
 
+		<!-- Template: Clock -->
+		<template id="clock">
+			<div class="clock">
+				<div class="clock__time"></div>
+				<div class="clock__date"></div>
+			</div>
+		</template>
+
 		<!-- Template: Day Card -->
 		<template id="day-card">
 			<section class="card card--day">
@@ -65,18 +78,21 @@
 		<!-- Template: Location Item (Past) -->
 		<template id="location-item">
 			<li class="search__item">
-				<span class="search__description search__description--city"></span>
-				<span class="search__description search__description--stco"></span>
-				<span class="search__description search__description--coords"></span>
+				<span class="search__desc search__desc--city"></span>
+				<span class="search__desc search__desc--stco"></span>
+				<span class="search__desc search__desc--coords"></span>
+				<span class="search__desc search__desc--temp"></span>
+				<span class="search__desc search__desc--icon"></span>
+				<span class="search__desc search__desc--condition"></span>
 			</li>
 		</template>
 
 		<!-- Template: Location Option (Future) -->
 		<template id="location-option">
 			<li class="search__option">
-				<span class="search__option-description search__option-description--city"></span>
-				<span class="search__option-description search__option-description--stco"></span>
-				<span class="search__option-description search__option-description--coords"></span>
+				<span class="search__opt-desc search__opt-desc--city"></span>
+				<span class="search__opt-desc search__opt-desc--stco"></span>
+				<span class="search__opt-desc search__opt-desc--coords"></span>
 			</li>
 		</template>
 
@@ -102,8 +118,10 @@
 		<!-- Scripts -->
 		<script src="https://cdn.jsdelivr.net/npm/dayjs@1.11/dayjs.min.js"
 		        integrity="sha256-nP25Pzivzy0Har7NZtMr/TODzfGWdlTrwmomYF2vQXM=" crossorigin="anonymous"></script>
+		<script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.10/plugin/utc.js"
+		        integrity="sha256-qDfIIxqpRhYWa543p6AHZ323xT3B8O6iLZFUAWtEQJw=" crossorigin="anonymous"></script>
 		<script src="./assets/js/languages.js"></script>
 		<script src="./assets/js/secret.js"></script>
-		<script src="assets/js/Weather.js"></script>
+		<script src="./assets/js/Weather.js"></script>
 	</body>
 </html>
