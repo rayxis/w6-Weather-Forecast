@@ -3,6 +3,7 @@
   - Organize constructor()
   - Finish Readme (description and screenshots)
   - Error testing and handling (and messages for the user)
+  - Make sure clicking on each item, if it's cached, it does not hit the API.
   - Merge existing locations
 	 - Call API again if state and country are not present... zip doesn't matter (but could still merge that).
   - Location (Functions done)
@@ -11,10 +12,10 @@
   - Weather
      - Average weather / day?
 	 - Temperature precision as a setting
+	 - Load the temperature in the history.
   - Design
-     - Scalable
-     - Header
-     - Display the time.
+     - Scalable for mobile
+     - Header (1 thing): the width of search is too variable. Title should be a fixed width, settings should be a fixed width, and search should (for the most part) be a fixed width).
      - Location Section
      - Weather Section
      - Set background color to reflect weather conditions / daytime. Maybe background of cards can be a weather image.
@@ -127,15 +128,20 @@ class Weather {
 		});
 	}
 
-	clockNew(tzOffset = undefined) {
+	// Creates a clock element with the current date and time, offset by an optionally specified timezone.
+	clockNew(tzOffset = undefined, timeFormat = undefined, dateFormat = undefined) {
+		// Clone the clock element and if a timezone offset was specified, use that for dayjs; otherwise keep it local.
 		const clockElement = this.templates.clock.cloneNode(true).firstElementChild;
 		const timeCurrent  = (tzOffset) ? dayjs.utc().utcOffset(tzOffset / 60) : dayjs();
 
+		// Set the time and date to their respective elements every second.
 		clockElement.clock = setInterval(() => {
-			clockElement.querySelector('.clock__time').textContent = timeCurrent.format(this.settings.clockTimeFormat);
-			clockElement.querySelector('.clock__date').textContent = timeCurrent.format(this.settings.clockDateFormat);
+			// If alternative formats were specified, use those; otherwise use the ones from settings.
+			clockElement.querySelector('.clock__time').textContent = timeCurrent.format(timeFormat ?? this.settings.clockTimeFormat);
+			clockElement.querySelector('.clock__date').textContent = timeCurrent.format(dateFormat ?? this.settings.clockDateFormat);
 		}, 1000);
 
+		// Return the element node, ready to be appended to the DOM.
 		return clockElement;
 	}
 
@@ -146,7 +152,8 @@ class Weather {
 	// Save the location and settings data arrays to localStorage.
 	apiCacheSave() {
 		// Convert the location and settings data array into a string, and ignore elemental references.
-		let locationData = JSON.stringify(this.data.location, (key, value) => (key === 'element') ? undefined: value);
+		let locationData = JSON.stringify(this.data.location,
+		                                  (key, value) => (key === 'element') ? undefined : value);
 		let settingsData = JSON.stringify(this.settings);
 
 		// If JSON was successful in converting it, save the item to localStorage.
@@ -165,8 +172,10 @@ class Weather {
 		// Load the location and settings data from localStorage, and convert it back into an array.
 		this.data.location = JSON.parse(localStorage.getItem(this.settings.cacheLocation)) ?? this.data.location;
 		this.settings      = JSON.parse(localStorage.getItem(this.settings.cacheSettings)) ?? this.settings;
+
 		// If the returned location array is not empty, go through the objects and rebuild them.
-		this.data.location.forEach(location => this.locationRebuild(location));
+		// Set the second argument (keepLastAccess) to true to keep the history order.
+		this.data.location.forEach(location => this.locationRebuild(location, true));
 
 		// Update the location history list, and return the last location accessed.
 		return this.locationListUpdate();
@@ -221,8 +230,8 @@ class Weather {
 	apiDataRebuild(apiData) {
 		let weatherClass = this;
 
-		apiData.getTemp       = key => {
-			return this.convertTemp(apiData.temp[key]);
+		apiData.getTemp       = (key, precision = undefined) => {
+			return this.convertTemp(apiData.temp[key], precision);
 		};
 		apiData.getVisibility = () => {
 			return this.convertDistance(apiData.visibility);
@@ -244,6 +253,7 @@ class Weather {
 	// Handler for API fetch requests, with optional callback function for handling asynchronous requests.
 	async apiFetchJSON(url, callback = undefined) {
 		try {
+			console.log('running', url);
 			//  Fetch data from the specified URL, and then return it.
 			const response = await fetch(url);
 
@@ -277,7 +287,8 @@ class Weather {
 		if (!locationData) return false;
 
 		// If the cache has expired OR there isn't any weather data stored in the location object, go fish.
-		if (location[`${cacheName}Until`] < Date.now() || !locationData[cacheName]) {
+		if (locationData[`${cacheName}Until`] < Date.now() || !locationData[dataName]) {
+			console.log(locationData[`${cacheName}Until`] < Date.now(), !locationData[dataName])
 			// Load the API (URL) object.
 			let url = this.apis[apiName];
 
@@ -349,7 +360,7 @@ class Weather {
 	}
 
 	// Convert original temperature unit (Kelvin) to the preferred unit (Celsius|Fahrenheit).
-	convertTemp(temp, incUnits = true) {
+	convertTemp(temp, precision = undefined, incUnits = true) {
 		// Check that the temperature is a number.
 		if (isNaN(+temp)) return false;
 		else {
@@ -359,7 +370,7 @@ class Weather {
 			if (this.settings.unitSystem === 'imperial') temp = 1.8 * temp + 32;
 
 			//  Return the result with units.
-			return Number(temp.toFixed(2)) + (incUnits ? this.settings.units[this.settings.unitSystem].temp : '');
+			return Number(temp.toFixed(precision ?? this.settings.tempAccuracy)) + (incUnits ? this.settings.units[this.settings.unitSystem].temp : '');
 		}
 	}
 
@@ -578,35 +589,41 @@ class Weather {
 
 	// Build the location object data for first-time entry into data storage.
 	locationBuild(locationData) {
+		let location;
 		// If location data does not include proper coordinates, then abort.
 		if (!locationData.lat || !locationData.lon) return false;
 		//  Convert the coordinates to a lesser accuracy.
 		const [latitude, longitude] = this.convertCoords(locationData.lat, locationData.lon);
 
-		// TODO: Figure out what to do for existing location merging.
-		// const locationExisting = this.data.location.find(loc => loc.name === locationData.name &&
-		//                                                         loc.lat - latitude < this.settings.similarAccuracy
-		// &&
-		//                                                         loc.lon - longitude < this.settings.similarAccuracy)
-		// ?? null;
+		const existingIndex = this.data.location.findIndex(loc => loc.city === locationData.name &&
+		                                                          this.locationDistanceCheck([loc.latitude, loc.longitude],
+		                                                                                     [latitude, longitude])) ?? null;
 
-		// Set the cache to expired, save any information that is provided by the original object.
-		const location = {
+		location = this.data.location[existingIndex] ?? {};
+		// Rebuild the location data object.
+		location = {
+			// If matching data already exists, merge with that; otherwise merge with an empty object.
+			...location,
 			cacheForecastUntil: Date.now() - 1,
 			cacheWeatherUntil:  Date.now() - 1,
 			lastAccess:         Date.now(),
 			latitude:           latitude,
 			longitude:          longitude,
-			city:               locationData.name ?? '',
-			state:              locationData.state ?? '',
-			country:            locationData.country ?? '',
-			zip:                locationData.zip ?? ''
+			city:               locationData.name,
+			state:              locationData.state ?? location.state ?? '',
+			country:            locationData.country,
+			zip:                locationData.zip ?? location.zip ?? ''
 		};
 
-		// save the location object in the location data array.
-		this.data.location.push(location);
-		// Add additional functions to the object.
-		this.locationRebuild(location);
+		// Save the location object in the location data array.
+		// If the location is new, push it to the array. If it was previously saved, overwrite the location.
+		if (existingIndex === null) this.data.location.push(location);
+		else this.data.location[existingIndex] = location;
+
+		// If there is a zipcode without a state, run the lat/lon pair through the API again.
+		if (location.zip && !locationData.state) this.locationLookup(`${latitude},${longitude}`);
+		// Otherwise add additional functions to the object.
+		else this.locationRebuild(location);
 	}
 
 	// Gets the user's current location.
@@ -635,12 +652,11 @@ class Weather {
 		const listItemBuild = location => {
 			const locationOption = this.templates.locationListOptions.cloneNode(true).firstElementChild;
 
-			// TODO: Duplicate code?
 			// Fill In the location details.
-			locationOption.querySelector('.search__option-description--city').textContent   = location.name;
-			locationOption.querySelector('.search__option-description--coords').textContent = `${location.lat}, ${location.lon}`;
+			locationOption.querySelector('.search__option-desc--city').textContent   = location.name;
+			locationOption.querySelector('.search__option-desc--coords').textContent = `${location.lat}, ${location.lon}`;
 			// If the state and country are specified, use those, otherwise use whatever there is.
-			locationOption.querySelector('.search__option-description--stco').textContent   =
+			locationOption.querySelector('.search__option-desc--stco').textContent   =
 				(location.state && location.country) ? `${location.state}, ${location.country}`
 				                                     : location.state || location.country || '';
 
@@ -682,22 +698,24 @@ class Weather {
 				(location.state && location.country) ? `${location.state}, ${location.country}`
 				                                     : location.state || location.country || '';
 
-			// TODO: Figure out a fix for this: it's not showing up because getTemp() is playing hide and seek.
-			if (typeof location.weatherData.getTemp === 'function') {
-				locationItem.querySelector('.search__desc--temp').textContent = location.weatherData.getTemp('actual');
-				locationItem.querySelector('.search__desc--icon').src = location.weatherData.weatherData.iconURL;
+			// data doesn't load until the promise is returned. Let's figure that one out.
+			if (location.weatherData && typeof location.weatherData.getTemp === 'function') {
+				locationItem.querySelector('.search__desc--temp').textContent       = location.weatherData.getTemp('actual', 0);
+				locationItem.querySelector('.search__desc--icon').src               = location.weatherData.weather.iconURL;
+				locationItem.querySelector('.search__desc--conditions').textContent = location.weatherData.weather.description;
 			}
 
 			// Save the reference to the direct object, and add an event listener.
 			locationItem.ref = location;
 			location.element = locationItem;
-			locationItem.addEventListener('click', location.select);
+			this.eventClickSave(locationItem, 'listItemBuild', () => location.select(false));
 
+			//  Return the location element.
 			return locationItem;
 		};
 
 		// Remove event handlers from all the children, and clear the list.
-		this.eventClickChildrenRemove(this.elements.locationList, location.select);
+		this.eventClickChildrenRemove(this.elements.locationList, 'listItemBuild');
 
 		// Sort through the locations in descending order, and then loop through them to build the list.
 		this.data.location.sort((a, b) => b.lastAccess - a.lastAccess);
@@ -787,7 +805,6 @@ class Weather {
 						this.locationListOptions(locationData);
 					} else locationData = locationData[0];
 				}
-				// TODO: If it is a zip code, merge the data.
 				// If the user doesn't need to make a choice, build the location object and update the list.
 				if (locationData) this.locationBuild(locationData);
 			}));
@@ -798,7 +815,7 @@ class Weather {
 
 	// Add on the functions and "rebuild" the object for both first-time and subsequent time entries. This is to fix
 	// data that gets destroyed in the caching process, but also avoids repetition of code.
-	async locationRebuild(locationData) {
+	async locationRebuild(locationData, keepLastAccess = false) {
 		// Force the weather data to refresh, by expiring the cache.
 		locationData.refresh = () => {
 			locationData.cacheForecastUntil = Date.now() - 1;
@@ -806,20 +823,20 @@ class Weather {
 			locationData.select(); // Changed this.select() to locationData.select()
 		};
 		// Save the element reference to the object, update the weather and forecast, then cache.
-		locationData.select  = async () => {
-			locationData.lastAccess = Date.now();
-			locationData.element    = this.locationListUpdate();
-			// Update the weather and the forecast data.
+		locationData.select  = async (keepLastAccess = false) => {
+			// Update if keepLastAccess is false. This saves the order on reload, and is set by apiCacheReload().
+			if (keepLastAccess === false)
+				locationData.lastAccess = Date.now();
+			// Update the weather, the forecast data and the location list; then cache the data.
 			await this.weatherUpdate(locationData);
 			await this.forecastUpdate(locationData);
+			this.locationListUpdate();
 			this.apiCacheSave();
 		};
 
-		// TODO: The only problem I foresee here is that select() is going to update all locations, and set all of the
-		//  lastAccess times to Date.now(), which will put them out of order when the site reloads, because
-		//  locationRebuild() is going to be forced to be looped for all of the cached items.
 		// Run the select() function to update the object and cache the weather data.
-		locationData.select();
+		// Maintain the keepLastAccess value.
+		await locationData.select(keepLastAccess);
 	}
 
 	// Remove the location object from data storage and cache.
@@ -900,7 +917,7 @@ class Weather {
 		alertElement.classList.add('active');
 
 		// Save the function for future removal.
-		this.eventClickSave(alertElement, 'alert', (event) => {
+		this.eventClickSave(alertElement, 'alert', () => {
 			// Remove the event handler when it's clicked on.
 			this.eventClickRemove(alertElement, 'alert');
 			// Remove the element when the user clicks on it.

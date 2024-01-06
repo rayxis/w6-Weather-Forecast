@@ -15,13 +15,11 @@
 			<form class="search">
 				<fieldset class="search__container">
 					<input class="search__input" id="place" name="place" type="text"/>
-					<button class="search__button"></button>
+					<button class="search__button u-clickable"></button>
 					<label class="search__label" for="place"></label>
 					<!-- Multiple Location Options -->
 					<ul class="search__list search__list--options"></ul>
 				</fieldset>
-				<!-- Location History -->
-				<ul class="search__list search__list--location"></ul>
 			</form>
 
 			<!-- Settings -->
@@ -29,21 +27,24 @@
 				<ul class="settings__list settings__list--language"></ul>
 				<ul class="settings__list settings__list--units"></ul>
 			</section>
+
+			<!-- Location History -->
+			<ul class="search__list search__list--location"></ul>
 		</header>
 
 		<main class="forecast">
 			<section class="weather">
 				<div class="weather__item weather__item--location"></div>
-				<div class="weather__item weather__item--feels-like hideEmpty"></div>
-				<div class="weather__item weather__item--humidity hideEmpty"></div>
+				<div class="weather__item weather__item--feels-like u-hide-empty"></div>
+				<div class="weather__item weather__item--humidity u-hide-empty"></div>
 				<img class="weather__item weather__item--icon"/>
-				<div class="weather__item weather__item--max hideEmpty"></div>
-				<div class="weather__item weather__item--min hideEmpty"></div>
-				<div class="weather__item weather__item--pressure hideEmpty"></div>
-				<div class="weather__item weather__item--temp hideEmpty"></div>
-				<div class="weather__item weather__item--time hideEmpty"></div>
-				<div class="weather__item weather__item--wind hideEmpty"></div>
-				<div class="weather__item weather__item--visibility hideEmpty"></div>
+				<div class="weather__item weather__item--max u-hide-empty"></div>
+				<div class="weather__item weather__item--min u-hide-empty"></div>
+				<div class="weather__item weather__item--pressure u-hide-empty"></div>
+				<div class="weather__item weather__item--temp u-hide-empty"></div>
+				<div class="weather__item weather__item--time u-hide-empty"></div>
+				<div class="weather__item weather__item--wind u-hide-empty"></div>
+				<div class="weather__item weather__item--visibility u-hide-empty"></div>
 			</section>
 		</main>
 
@@ -66,7 +67,7 @@
 
 		<!-- Template: Day Card -->
 		<template id="day-card">
-			<section class="card card--day">
+			<section class="card card--day u-clickable">
 				<header class="card__header">
 					<h2 class="card__title card__title--location"></h2>
 					<h3 class="card__subtitle card__subtitle--date"></h3>
@@ -77,28 +78,28 @@
 
 		<!-- Template: Location Item (Past) -->
 		<template id="location-item">
-			<li class="search__item">
+			<li class="search__item u-clickable">
 				<span class="search__desc search__desc--city"></span>
 				<span class="search__desc search__desc--stco"></span>
 				<span class="search__desc search__desc--coords"></span>
 				<span class="search__desc search__desc--temp"></span>
-				<span class="search__desc search__desc--icon"></span>
-				<span class="search__desc search__desc--condition"></span>
+				<img class="search__desc search__desc--icon"/>
+				<span class="search__desc search__desc--conditions"></span>
 			</li>
 		</template>
 
 		<!-- Template: Location Option (Future) -->
 		<template id="location-option">
-			<li class="search__option">
-				<span class="search__opt-desc search__opt-desc--city"></span>
-				<span class="search__opt-desc search__opt-desc--stco"></span>
-				<span class="search__opt-desc search__opt-desc--coords"></span>
+			<li class="search__option u-clickable">
+				<span class="search__option-desc search__option-desc--city"></span>
+				<span class="search__option-desc search__option-desc--stco"></span>
+				<span class="search__option-desc search__option-desc--coords"></span>
 			</li>
 		</template>
 
 		<!-- Template: Settings Item -->
 		<template id="settings-item">
-			<li class="settings__item"></li>
+			<li class="settings__item u-clickable"></li>
 		</template>
 
 		<!-- Template: Time Card (within Day Card) -->
