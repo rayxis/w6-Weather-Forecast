@@ -1,5 +1,7 @@
 /***
  TODO:
+  - Bugs
+	 - language data is being reset on reload.
   - Organize constructor()
   - Finish Readme (description and screenshots)
   - Error testing and handling (and messages for the user)
@@ -8,7 +10,6 @@
 	 - Local time and time where you are.
   - Weather
      - Average weather / day?
-	 - Load the temperature in the history.
   - Design
      - Scalable for mobile
      - Header (1 thing): the width of search is too variable. Title should be a fixed width, settings should be a fixed width, and search should (for the most part) be a fixed width).
@@ -17,8 +18,6 @@
      - Set background color to reflect weather conditions / daytime. Maybe background of cards can be a weather image.
  ***/
 dayjs.extend(window.dayjs_plugin_utc);
-
-let weather;
 
 class Weather {
 	//  API URLs
@@ -31,8 +30,9 @@ class Weather {
 	};
 	//  Data storage
 	data      = {
-		functions:    {},           // Event handler function storage
-		location:     [],           // Location object storage
+		cacheLoaded:  false,    // Flag for if the page has loaded all of the cached data.
+		functions:    {},       // Event handler function storage
+		location:     [],       // Location object storage
 		numberFormat: undefined // Number formatting for different locales.
 	};
 	//  Element references
@@ -59,21 +59,22 @@ class Weather {
 	};
 	//  Settings
 	settings  = {
-		apiKey:           '',   // Leave blank. The API key is filled by the class' constructor.
-		coordAccuracy:    2,    // Decimal Accuracy for coordinates (.1 = 11.1km, .01 = 1.11km)
-		distanceAccuracy: 2,    // Distance conversion function accuracy.
-		cacheForecastExp: 3 * 60 * 60 * 1000, // In milliseconds [3 hours].
-		cacheLocation:    'locationData',     // Cache location name for localStorage.
-		cacheSettings:    'settingsData',     // Cache settings name for localStorage.
-		cacheWeatherExp:  60 * 60 * 1000,     // In milliseconds [1 hour].
-		clockDateFormat:  'D MMMM YYYY',      // Clock Date Format
-		clockTimeFormat:  'h:mm a',           // Clock Time Format
-		geoLimit:         5,    // Maximum location options from OpenWeatherMaps is 5.
-		language:         undefined,
-		iconURL:          'https://openweathermap.org/img/wn/', // URL for OpenWeather's icons.
-		similarAccuracy:  .1,   // Difference in distance for two places with the names to be considered the same place.
-		tempAccuracy:     2,    // Decimal accuracy for temperature.
-		units:            {
+		apiKey:            '',   // Leave blank. The API key is filled by the class' constructor.
+		coordPrecision:    2,    // Decimal Precision for coordinates (.1 = 11.1km, .01 = 1.11km)
+		distancePrecision: 2,    // Distance conversion function precision.
+		cacheForecastExp:  3 * 60 * 60 * 1000, // In milliseconds [3 hours].
+		cacheLocation:     'locationData',     // Cache location name for localStorage.
+		cacheSettings:     'settingsData',     // Cache settings name for localStorage.
+		cacheWeatherExp:   60 * 60 * 1000,     // In milliseconds [1 hour].
+		clockDateFormat:   'D MMMM YYYY',      // Clock Date Format
+		clockTimeFormat:   'h:mm a',           // Clock Time Format
+		geoLimit:          5,    // Maximum location options from OpenWeatherMaps is 5.
+		language:          undefined,
+		iconURL:           'https://openweathermap.org/img/wn/', // URL for OpenWeather's icons.
+		similarPrecision:  .1,   // Difference in distance for two places with the names to be considered the same
+	                             // place.
+		tempPrecision: 2,    // Decimal precision for temperature.
+		units:         {
 			imperial:   {
 				distance: 'mi',
 				temp:     '°F'
@@ -87,7 +88,7 @@ class Weather {
 				temp:     ' K'
 			}
 		},
-		unitSystem:       'imperial'  // Unit system (imperial, metric, scientific).
+		unitSystem:    'imperial'  // Unit system (imperial, metric, scientific).
 	};
 	//  Element template references
 	templates = {
@@ -101,42 +102,33 @@ class Weather {
 	};
 
 	constructor() {
-		weather = this;
-
+		// Load the API key, and languages file.
 		this.settings.apiKey = openWeatherMap.apiKey;
 		this.languages       = languages;
-		//  Load site cache. This will set the languages loaded for the site (which will load the units menu).
-		this.apiCacheLoad();
+
+		// Load the language menu, and site cache. This will set the languages loaded for the site (which will also
+		// load the units menu).
 		this.languageMenuBuild();
+		this.apiCacheLoad('settings');
+
+		this.languageSet(this.settings.language);
+		// Set the language from settings, or falling back to the browser's detected language, defaulting to English.
+		// this.languageSet(this.languages[this.settings.language] || this.languages[navigator.language] || this.languages['en-US']);
+		this.apiCacheLoad('location');
 
 		// Clock
 		const clock = this.clockNew();
 		clock.classList.add('weather__item', 'weather__item--time');
 		this.elements.weather.querySelector('.weather__item--time').replaceWith(clock);
 
-		// Save the function, and add event handler.
+		// Save the function, and add event handler for search button.
 		this.eventClickSave(this.elements.locationSearchButton, 'userLocationLookup', (event) => {
 			event.preventDefault();
 			//  Search for the user-specified location.
 			this.locationLookup(this.elements.locationSearchInput.value);
 		});
-	}
 
-	// Creates a clock element with the current date and time, offset by an optionally specified timezone.
-	clockNew(tzOffset = undefined, timeFormat = undefined, dateFormat = undefined) {
-		// Clone the clock element and if a timezone offset was specified, use that for dayjs; otherwise keep it local.
-		const clockElement = this.templates.clock.cloneNode(true).firstElementChild;
-		const timeCurrent  = (tzOffset) ? dayjs.utc().utcOffset(tzOffset / 60) : dayjs();
-
-		// Set the time and date to their respective elements every second.
-		clockElement.clock = setInterval(() => {
-			// If alternative formats were specified, use those; otherwise use the ones from settings.
-			clockElement.querySelector('.clock__time').textContent = timeCurrent.format(timeFormat ?? this.settings.clockTimeFormat);
-			clockElement.querySelector('.clock__date').textContent = timeCurrent.format(dateFormat ?? this.settings.clockDateFormat);
-		}, 1000);
-
-		// Return the element node, ready to be appended to the DOM.
-		return clockElement;
+		this.data.cacheLoaded = true;
 	}
 
 	/***
@@ -144,40 +136,61 @@ class Weather {
 	 ***/
 
 	// Save the location and settings data arrays to localStorage.
-	apiCacheSave() {
-		// Convert the location and settings data array into a string, and ignore elemental references.
-		let locationData = JSON.stringify(this.data.location,
-		                                  (key, value) => (key === 'element') ? undefined : value);
-		let settingsData = JSON.stringify(this.settings);
+	apiCacheSave(type) {
+		let apiData, cacheKey;
 
-		// If JSON was successful in converting it, save the item to localStorage.
-		if (locationData && settingsData) {
-			localStorage.setItem(this.settings.cacheLocation, locationData);
-			localStorage.setItem(this.settings.cacheSettings, settingsData);
-			// Check the integrity of the data in localStorage.
-			if (locationData === localStorage.getItem(this.settings.cacheLocation)) return true;
+		try {
+			switch (type) {
+				// Convert the location and settings data array into a string, and ignore elemental references.
+				case 'location':
+					cacheKey = this.settings.cacheLocation;
+					apiData  = JSON.stringify(this.data.location,
+					                          (key, value) => (key === 'element') ? undefined : value);
+					break;
+				// Convert the settings data array into a string, and set the cacheKey.
+				case 'settings':
+					cacheKey = this.settings.cacheSettings;
+					apiData  = JSON.stringify(this.settings);
+					break;
+				default:
+					throw new Error(`Invalid data cache type used: "$type"`);
+			}
+			// If the apiData was successfully converted to JSON, store it, and then check the integrity of the save.
+			if (apiData) {
+				localStorage.setItem(cacheKey, apiData);
+				if (apiData === localStorage.getItem(cacheKey)) return true;
+			}
+		} catch (error) {
+			// If JSON conversion was unsuccessful, or the data did not save properly, something broke.
+			console.log('apiCacheSave failure:', error);
 		}
-		// If JSON was not successful, or the data did not save properly, return false.
 		return false;
 	}
 
 	// Load cached data from localStorage.
-	apiCacheLoad() {
-		// Load the location and settings data from localStorage, and convert it back into an array.
-		this.data.location = JSON.parse(localStorage.getItem(this.settings.cacheLocation)) ?? this.data.location;
-		this.settings      = JSON.parse(localStorage.getItem(this.settings.cacheSettings)) ?? this.settings;
+	apiCacheLoad(type) {
+		try {
+			switch (type) {
+				case 'location':
+					// Load location data from localStorage, and convert it back into an array; if it doesn't exist, use
+					// the existing value (there might not be one).
+					this.data.location = JSON.parse(localStorage.getItem(this.settings.cacheLocation)) ?? this.data.location;
 
-		// Set the language here because settings are needed, but also the language is needed to rebuild any objects.
-		// It will get the language from settings, falling back to the browser's settings and (if the language doesn't
-		// exist, or the browser somehow didn't detect it) defaulting to English.
-		this.languageSet(this.languages[this.settings.language] || this.languages[navigator.language] || this.languages['en-US']);
-
-		// If the returned location array is not empty, go through the objects and rebuild them.
-		// Set the second argument (keepLastAccess) to true to keep the history order.
-		this.data.location.forEach(location => this.locationRebuild(location, true));
-
-		// Update the location history list, and return the last location accessed.
-		return this.locationListUpdate();
+					// Loop through the returned array, and rebuild the objects.
+					// Set the second argument (keepLastAccess) to true to keep the order of access.
+					this.data.location.forEach(location => this.locationRebuild(location, true));
+					break;
+				case 'settings':
+					this.settings = JSON.parse(localStorage.getItem(this.settings.cacheSettings)) ?? this.settings;
+					break;
+				default:
+					throw new Error(`Invalid data cache type used: "$type"`);
+			}
+			return true;
+		} catch (error) {
+			console.log('apiCacheSave failure:', error);
+			return false;
+		}
 	}
 
 	// Rebuild the weather objects.
@@ -227,8 +240,6 @@ class Weather {
 	}
 
 	apiDataRebuild(apiData) {
-		let weatherClass = this;
-
 		apiData.getTemp       = (key, precision = undefined) => {
 			return this.convertTemp(apiData.temp[key], precision);
 		};
@@ -312,14 +323,14 @@ class Weather {
 	 * Conversion Functions
 	 ***/
 
-	// Convert latitude and longitude to the accuracy specified in the settings.
+	// Convert latitude and longitude to the precision specified in the settings.
 	convertCoords(latitude, longitude) {
 		// Check that the degrees are represented as a number.
 		if (isNaN(+latitude) || isNaN(+longitude)) return false;
-		// Round the coordinate accuracy, and return as an array.
+		// Round the coordinate precision, and return as an array.
 		else return [
-			parseFloat(latitude).toFixed(this.settings.coordAccuracy),
-			parseFloat(longitude).toFixed(this.settings.coordAccuracy)
+			parseFloat(latitude).toFixed(this.settings.coordPrecision),
+			parseFloat(longitude).toFixed(this.settings.coordPrecision)
 		];
 	}
 
@@ -347,7 +358,7 @@ class Weather {
 		else distance /= 1000;
 
 		// Round up to the specified amount of decimals.
-		distance = this.data.numberFormat.format(distance.toFixed(this.settings.distanceAccuracy));
+		distance = this.data.numberFormat.format(distance.toFixed(this.settings.distancePrecision));
 		// Return the result.
 
 		// Including units on the end?
@@ -367,7 +378,7 @@ class Weather {
 			if (this.settings.unitSystem === 'imperial') temp = 1.8 * temp + 32;
 
 			//  Return the result with units.
-			return this.data.numberFormat.format(temp.toFixed(precision ?? this.settings.tempAccuracy)) + (incUnits ? this.settings.units[this.settings.unitSystem].temp : '');
+			return this.data.numberFormat.format(temp.toFixed(precision ?? this.settings.tempPrecision)) + (incUnits ? this.settings.units[this.settings.unitSystem].temp : '');
 		}
 	}
 
@@ -550,17 +561,21 @@ class Weather {
 		this.elements.locationSearchInput.placeholder             = this.languageText('labels', 'searchInput');
 		// Update the data presentation.
 		this.unitMenuBuild();
-		this.locationUpdate();
+
+		// TODO: Find out why you have to click the language twice to load it.
+
+		if (this.data.cacheLoaded) this.locationUpdate();
 	}
 
 	languageSet(language) {
 		// Remove any locale script, if there is one.
 		document.querySelector(`script[src="${language.dayjs}"]`)?.remove();
+
 		// Set the current language and number format, then save the settings.
 		this.settings.language = language;
-		console.log(language.locale);
 		this.data.numberFormat = new Intl.NumberFormat(language.locale);
-		this.apiCacheSave();
+		this.apiCacheSave('settings');
+
 		// Set the language in to the <html> tag.
 		document.documentElement.lang = language.locale;
 
@@ -599,7 +614,7 @@ class Weather {
 		let location;
 		// If location data does not include proper coordinates, then abort.
 		if (!locationData.lat || !locationData.lon) return false;
-		//  Convert the coordinates to a lesser accuracy.
+		// Convert coordinates to a lesser precision.
 		const [latitude, longitude] = this.convertCoords(locationData.lat, locationData.lon);
 
 		const existingIndex = this.data.location.findIndex(loc => loc.city === locationData.name &&
@@ -624,7 +639,7 @@ class Weather {
 
 		// Save the location object in the location data array.
 		// If the location is new, push it to the array. If it was previously saved, overwrite the location.
-		if (existingIndex === null) this.data.location.push(location);
+		if (existingIndex < 0) this.data.location.push(location);
 		else this.data.location[existingIndex] = location;
 
 		// If there is a zipcode without a state, run the lat/lon pair through the API again.
@@ -645,8 +660,8 @@ class Weather {
 
 	// Compares the distances between two pairs of coordinates. They should be passed here as array items.
 	locationDistanceCheck(locationOne, locationTwo) {
-		return Math.abs(parseFloat(locationOne[0]) - parseFloat(locationTwo[0])) <= this.settings.similarAccuracy &&
-		       Math.abs(parseFloat(locationOne[1]) - parseFloat(locationTwo[1])) <= this.settings.similarAccuracy;
+		return Math.abs(parseFloat(locationOne[0]) - parseFloat(locationTwo[0])) <= this.settings.similarPrecision &&
+		       Math.abs(parseFloat(locationOne[1]) - parseFloat(locationTwo[1])) <= this.settings.similarPrecision;
 	}
 
 	// List options for multiple returned locations based off of the search criteria.
@@ -654,16 +669,18 @@ class Weather {
 		const locationList = this.elements.locationListOptions;
 
 		// Build each item of the location options list.
-		const listItemBuild = location => {
-			const locationOption = this.templates.locationListOptions.cloneNode(true).firstElementChild;
+		const listItemBuild = locationData => {
+			const locationOption        = this.templates.locationListOptions.cloneNode(true).firstElementChild;
+			// Convert coordinates to a lesser precision.
+			const [latitude, longitude] = this.convertCoords(locationData.lat, locationData.lon);
 
 			// Fill In the location details.
-			locationOption.querySelector('.search__option-desc--city').textContent   = location.name;
-			locationOption.querySelector('.search__option-desc--coords').textContent = `${location.lat}, ${location.lon}`;
+			locationOption.querySelector('.search__option-desc--city').textContent   = locationData.name;
+			locationOption.querySelector('.search__option-desc--coords').textContent = `${latitude}, ${longitude}`;
 			// If the state and country are specified, use those, otherwise use whatever there is.
 			locationOption.querySelector('.search__option-desc--stco').textContent   =
-				(location.state && location.country) ? `${location.state}, ${location.country}`
-				                                     : location.state || location.country || '';
+				(locationData.state && locationData.country) ? `${locationData.state}, ${locationData.country}`
+				                                             : locationData.state || locationData.country || '';
 
 			// Save the function for future removal.
 			this.eventClickSave(locationOption, 'locationListOptions', ((locationOption) => {
@@ -676,7 +693,7 @@ class Weather {
 				// Rebuild the location object by using the referenced location index, then update the history.
 				this.locationBuild(locationOption);
 				this.locationListUpdate();
-			}).bind(this, location));
+			}).bind(this, locationData));
 
 			return locationOption;
 		};
@@ -770,12 +787,12 @@ class Weather {
 					this.alertUser('coordsInvalid');
 
 
-				// Get the URL, set the return limit and convert the coordinate accuracy.
+				// Get the URL, set the return limit and convert the coordinate precision.
 				url                            = this.apis.geocodeCoords;
 				urlSearch.limit                = this.settings.geoLimit;
 				[urlSearch.lat, urlSearch.lon] = this.convertCoords(matches[1], matches[2]);
 
-				//  Cache search test for latitude and longitude. Accept a margin of error, set in similarAccuracy.
+				//  Cache search test for latitude and longitude. Accept a margin of error, set in similarPrecision.
 				cacheTest = loc => this.locationDistanceCheck([loc.latitude, loc.longitude],
 				                                              [urlSearch.lat, urlSearch.lon]);
 
@@ -832,11 +849,12 @@ class Weather {
 			// Update if keepLastAccess is false. This saves the order on reload, and is set by apiCacheReload().
 			if (keepLastAccess === false)
 				locationData.lastAccess = Date.now();
+
 			// Update the weather, the forecast data and the location list; then cache the data.
 			await this.weatherUpdate(locationData);
 			await this.forecastUpdate(locationData);
 			this.locationListUpdate();
-			this.apiCacheSave();
+			this.apiCacheSave('location');
 		};
 
 		// Run the select() function to update the object and cache the weather data.
@@ -852,11 +870,11 @@ class Weather {
 		locationData = undefined;
 
 		// Recache the location array.
-		this.apiCacheSave();
+		this.apiCacheSave('location');
 	}
 
 	locationUpdate() {
-		if (this.data.location.length) this.data.location[0].select();
+		this.data.location[0].select();
 	}
 
 	/***
@@ -940,6 +958,23 @@ class Weather {
 		});
 	}
 
+	// Creates a clock element with the current date and time, offset by an optionally specified timezone.
+	clockNew(tzOffset = undefined, timeFormat = undefined, dateFormat = undefined) {
+		// Clone the clock element and if a timezone offset was specified, use that for dayjs; otherwise keep it local.
+		const clockElement = this.templates.clock.cloneNode(true).firstElementChild;
+		const timeCurrent  = (tzOffset) ? dayjs.utc().utcOffset(tzOffset / 60) : dayjs();
+
+		// Set the time and date to their respective elements every second.
+		clockElement.clock = setInterval(() => {
+			// If alternative formats were specified, use those; otherwise use the ones from settings.
+			clockElement.querySelector('.clock__time').textContent = timeCurrent.format(timeFormat ?? this.settings.clockTimeFormat);
+			clockElement.querySelector('.clock__date').textContent = timeCurrent.format(dateFormat ?? this.settings.clockDateFormat);
+		}, 1000);
+
+		// Return the element node, ready to be appended to the DOM.
+		return clockElement;
+	}
+
 	// Build the unit measurement selection menu.
 	unitMenuBuild() {
 		// Save the event handler function for later so it can be removed.
@@ -971,4 +1006,5 @@ class Weather {
 	}
 }
 
-new Weather();
+// Load the Weather class.
+const weather = new Weather();

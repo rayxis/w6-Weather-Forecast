@@ -1,6 +1,5 @@
 const languages = {
-	'de-DE':  {
-		abbr:        'DE',
+	'de-DE': {
 		dayjs:       'https://cdn.jsdelivr.net/npm/dayjs@1.11/locale/de.js',
 		description: 'Deutsch',
 		errors:      {
@@ -56,7 +55,6 @@ const languages = {
 		locale: 'en-US'
 	},
 	'es-ES': {
-		abbr:        'ES',
 		dayjs:       'https://cdn.jsdelivr.net/npm/dayjs@1.11/locale/es.js',
 		description: 'Español',
 		errors:      {
@@ -83,7 +81,7 @@ const languages = {
 		},
 		locale:      'es-ES'
 	},
-	'fr-FR':  {
+	'fr-FR': {
 		dayjs:       'https://cdn.jsdelivr.net/npm/dayjs@1.11/locale/fr.js',
 		description: 'Français',
 		errors:      {
