@@ -1,62 +1,5 @@
 const languages = {
-	English: {
-		abbr:        'EN',
-		description: 'English',
-		// Error messages
-		errors: {
-			coordsInvalid: 'These are not valid coordinates',
-			inputInvalid:  'This is not valid input.',
-			networkError:  'Network error'
-		},
-		icon:   './assets/images/USA.webp',
-		labels: {
-			feelsLike:    'Feels Like',
-			humidity:     'Humidity',
-			imperial:     'Imperial',
-			max:          'Max',
-			metric:       'Metric',
-			min:          'Min',
-			pressure:     'Pressure',
-			scientific:   'Scientific',
-			searchButton: 'Go',
-			searchInput:  'Enter a location',
-			searchLabel:  'City, State, Country, Zip or Lat/Lon',
-			temp:         'Temp',
-			title:        'Weather Forecast',
-			wind:         'Wind',
-			visibility:   'Visibility'
-		},
-		locale: 'en-US'
-	},
-	French:  {
-		abbr:        'FR',
-		dayjs:       'https://cdn.jsdelivr.net/npm/dayjs@1.11/locale/fr.js',
-		description: 'Français',
-		errors:      {
-			coordsInvalid: 'Ces coordonnées ne sont pas valides',
-			inputInvalid:  'Cette entrée n\'est pas valide.'
-		},
-		icon:        './assets/images/France.webp',
-		labels:      {
-			feelsLike:    'Ressenti',
-			humidity:     'Humidité',
-			imperial:     'impérial',
-			max:          'Max',
-			metric:       'Métrique',
-			min:          'Min',
-			pressure:     'Pression',
-			scientific:   'Scientifique',
-			searchButton: 'Va',
-			searchInput:  'Saisir un lieu',
-			searchLabel:  'Ville, État, Pays, Zip ou Lat/Lon',
-			temp:         'Temp',
-			title:        'Prévisions Météorologiques',
-			wind:         'Vent',
-			visibility:   'Visibilité'
-		},
-		locale:      'fr-FR'
-	},
-	German:  {
+	'de-DE':  {
 		abbr:        'DE',
 		dayjs:       'https://cdn.jsdelivr.net/npm/dayjs@1.11/locale/de.js',
 		description: 'Deutsch',
@@ -84,7 +27,35 @@ const languages = {
 		},
 		locale:      'de-DE'
 	},
-	Spanish: {
+	'en-US': {
+		description: 'English',
+		// Error messages
+		errors: {
+			coordsInvalid: 'These are not valid coordinates',
+			inputInvalid:  'This is not valid input.',
+			networkError:  'Network error'
+		},
+		icon:   './assets/images/USA.webp',
+		labels: {
+			feelsLike:    'Feels Like',
+			humidity:     'Humidity',
+			imperial:     'Imperial',
+			max:          'Max',
+			metric:       'Metric',
+			min:          'Min',
+			pressure:     'Pressure',
+			scientific:   'Scientific',
+			searchButton: 'Go',
+			searchInput:  'Enter a location',
+			searchLabel:  'City, State, Country, Zip or Lat/Lon',
+			temp:         'Temp',
+			title:        'Weather Forecast',
+			wind:         'Wind',
+			visibility:   'Visibility'
+		},
+		locale: 'en-US'
+	},
+	'es-ES': {
 		abbr:        'ES',
 		dayjs:       'https://cdn.jsdelivr.net/npm/dayjs@1.11/locale/es.js',
 		description: 'Español',
@@ -111,5 +82,32 @@ const languages = {
 			visibility:   'Visibilidad'
 		},
 		locale:      'es-ES'
+	},
+	'fr-FR':  {
+		dayjs:       'https://cdn.jsdelivr.net/npm/dayjs@1.11/locale/fr.js',
+		description: 'Français',
+		errors:      {
+			coordsInvalid: 'Ces coordonnées ne sont pas valides',
+			inputInvalid:  'Cette entrée n\'est pas valide.'
+		},
+		icon:        './assets/images/France.webp',
+		labels:      {
+			feelsLike:    'Ressenti',
+			humidity:     'Humidité',
+			imperial:     'impérial',
+			max:          'Max',
+			metric:       'Métrique',
+			min:          'Min',
+			pressure:     'Pression',
+			scientific:   'Scientifique',
+			searchButton: 'Va',
+			searchInput:  'Saisir un lieu',
+			searchLabel:  'Ville, État, Pays, Zip ou Lat/Lon',
+			temp:         'Temp',
+			title:        'Prévisions Météorologiques',
+			wind:         'Vent',
+			visibility:   'Visibilité'
+		},
+		locale:      'fr-FR'
 	}
 };

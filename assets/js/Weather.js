@@ -3,15 +3,11 @@
   - Organize constructor()
   - Finish Readme (description and screenshots)
   - Error testing and handling (and messages for the user)
-  - Make sure clicking on each item, if it's cached, it does not hit the API.
-  - Merge existing locations
-	 - Call API again if state and country are not present... zip doesn't matter (but could still merge that).
   - Location (Functions done)
      - Get user's current location
 	 - Local time and time where you are.
   - Weather
      - Average weather / day?
-	 - Temperature precision as a setting
 	 - Load the temperature in the history.
   - Design
      - Scalable for mobile
@@ -35,8 +31,9 @@ class Weather {
 	};
 	//  Data storage
 	data      = {
-		location:  [],    // Location object storage
-		functions: {}     // Event handler function storage
+		functions:    {},           // Event handler function storage
+		location:     [],           // Location object storage
+		numberFormat: undefined // Number formatting for different locales.
 	};
 	//  Element references
 	elements  = {
@@ -107,18 +104,15 @@ class Weather {
 		weather = this;
 
 		this.settings.apiKey = openWeatherMap.apiKey;
-		//  Load site cache.
+		this.languages       = languages;
+		//  Load site cache. This will set the languages loaded for the site (which will load the units menu).
 		this.apiCacheLoad();
+		this.languageMenuBuild();
 
 		// Clock
 		const clock = this.clockNew();
 		clock.classList.add('weather__item', 'weather__item--time');
 		this.elements.weather.querySelector('.weather__item--time').replaceWith(clock);
-
-		// Setup Languages (this will also run this.unitMenuBuild() since it has to be rebuilt on translation).
-		this.languages = languages;
-		this.languageMenuBuild();
-		this.languageSet(this.settings.language ?? this.languages.English);
 
 		// Save the function, and add event handler.
 		this.eventClickSave(this.elements.locationSearchButton, 'userLocationLookup', (event) => {
@@ -172,6 +166,11 @@ class Weather {
 		// Load the location and settings data from localStorage, and convert it back into an array.
 		this.data.location = JSON.parse(localStorage.getItem(this.settings.cacheLocation)) ?? this.data.location;
 		this.settings      = JSON.parse(localStorage.getItem(this.settings.cacheSettings)) ?? this.settings;
+
+		// Set the language here because settings are needed, but also the language is needed to rebuild any objects.
+		// It will get the language from settings, falling back to the browser's settings and (if the language doesn't
+		// exist, or the browser somehow didn't detect it) defaulting to English.
+		this.languageSet(this.languages[this.settings.language] || this.languages[navigator.language] || this.languages['en-US']);
 
 		// If the returned location array is not empty, go through the objects and rebuild them.
 		// Set the second argument (keepLastAccess) to true to keep the history order.
@@ -253,7 +252,6 @@ class Weather {
 	// Handler for API fetch requests, with optional callback function for handling asynchronous requests.
 	async apiFetchJSON(url, callback = undefined) {
 		try {
-			console.log('running', url);
 			//  Fetch data from the specified URL, and then return it.
 			const response = await fetch(url);
 
@@ -288,7 +286,6 @@ class Weather {
 
 		// If the cache has expired OR there isn't any weather data stored in the location object, go fish.
 		if (locationData[`${cacheName}Until`] < Date.now() || !locationData[dataName]) {
-			console.log(locationData[`${cacheName}Until`] < Date.now(), !locationData[dataName])
 			// Load the API (URL) object.
 			let url = this.apis[apiName];
 
@@ -350,7 +347,7 @@ class Weather {
 		else distance /= 1000;
 
 		// Round up to the specified amount of decimals.
-		distance = Number(distance.toFixed(this.settings.distanceAccuracy));
+		distance = this.data.numberFormat.format(distance.toFixed(this.settings.distanceAccuracy));
 		// Return the result.
 
 		// Including units on the end?
@@ -370,7 +367,7 @@ class Weather {
 			if (this.settings.unitSystem === 'imperial') temp = 1.8 * temp + 32;
 
 			//  Return the result with units.
-			return Number(temp.toFixed(precision ?? this.settings.tempAccuracy)) + (incUnits ? this.settings.units[this.settings.unitSystem].temp : '');
+			return this.data.numberFormat.format(temp.toFixed(precision ?? this.settings.tempAccuracy)) + (incUnits ? this.settings.units[this.settings.unitSystem].temp : '');
 		}
 	}
 
@@ -468,25 +465,31 @@ class Weather {
 
 		// Time block builder function
 		const timeBuild = forecast => {
-			// Clone the time card
-			const timeCard = this.templates.timeCard.cloneNode(true).firstElementChild;
+			// Clone the time card, and save the querySelector results.
+			const timeCard    = this.templates.timeCard.cloneNode(true).firstElementChild;
+			const humidity    = timeCard.querySelector('.card__item--humidity');
+			const pressure    = timeCard.querySelector('.card__item--pressure');
+			const temp        = timeCard.querySelector('.card__item--temp');
+			const weatherIcon = timeCard.querySelector('.card__item--icon');
+			const wind        = timeCard.querySelector('.card__item--wind');
 
 			// Set the icon for the time block.
-			timeCard.querySelector('.card__item--icon').src = forecast.weather.iconURL;
-			timeCard.querySelector('.card__item--icon').alt = forecast.weather.description;
+			weatherIcon.src = forecast.weather.iconURL;
+			weatherIcon.alt = forecast.weather.description;
 
 			// Set the time (format: 12am), current temperature, humidity, and wind speed/direction.
-			timeCard.querySelector('.card__item--time').textContent     = dayjs.unix(forecast.timestamp).format('ha');
-			timeCard.querySelector('.card__item--humidity').textContent = forecast.humidity;
-			timeCard.querySelector('.card__item--pressure').textContent = forecast.pressure;
-			timeCard.querySelector('.card__item--temp').textContent     = forecast.getTemp('actual');
-			timeCard.querySelector('.card__item--wind').textContent     = forecast.getWind('both');
+			timeCard.querySelector('.card__item--time').textContent = dayjs.unix(forecast.timestamp).format('ha');
+
+			humidity.textContent = forecast.humidity;
+			pressure.textContent = forecast.pressure;
+			temp.textContent     = forecast.getTemp('actual');
+			wind.textContent     = forecast.getWind('both');
 
 			// Set the data-label attributes for CSS to fill in. This is mostly for translation purposes.
-			timeCard.querySelector('.card__item--humidity').dataset.label = this.languageText('labels', 'humidity');
-			timeCard.querySelector('.card__item--pressure').dataset.label = this.languageText('labels', 'pressure');
-			timeCard.querySelector('.card__item--temp').dataset.label     = this.languageText('labels', 'temp');
-			timeCard.querySelector('.card__item--wind').dataset.label     = this.languageText('labels', 'wind');
+			humidity.dataset.label = this.languageText('labels', 'humidity');
+			pressure.dataset.label = this.languageText('labels', 'pressure');
+			temp.dataset.label     = this.languageText('labels', 'temp');
+			wind.dataset.label     = this.languageText('labels', 'wind');
 
 			return timeCard;
 		};
@@ -553,9 +556,13 @@ class Weather {
 	languageSet(language) {
 		// Remove any locale script, if there is one.
 		document.querySelector(`script[src="${language.dayjs}"]`)?.remove();
-		// Set the current language, and save the settings.
+		// Set the current language and number format, then save the settings.
 		this.settings.language = language;
+		console.log(language.locale);
+		this.data.numberFormat = new Intl.NumberFormat(language.locale);
 		this.apiCacheSave();
+		// Set the language in to the <html> tag.
+		document.documentElement.lang = language.locale;
 
 		// Toggle the active class on the selected language, and remove it from the others.
 		[...this.elements.settingsLanguageList.children]
@@ -634,8 +641,6 @@ class Weather {
 			console.error(error);
 			this.alertUser('Unable to retrieve your location. Please try again later.');
 		});
-		// TODO: This.
-
 	}
 
 	// Compares the distances between two pairs of coordinates. They should be passed here as array items.
@@ -863,32 +868,42 @@ class Weather {
 		// Shorten the references.
 		const weatherElement = this.elements.weather;
 		const weatherData    = locationData.weatherData;
+		const feelsLike      = weatherElement.querySelector('.weather__item--feels-like');
+		const humidity       = weatherElement.querySelector('.weather__item--humidity');
+		const max            = weatherElement.querySelector('.weather__item--max');
+		const min            = weatherElement.querySelector('.weather__item--min');
+		const pressure       = weatherElement.querySelector('.weather__item--pressure');
+		const temp           = weatherElement.querySelector('.weather__item--temp');
+		const weatherIcon    = weatherElement.querySelector('.weather__item--icon');
+		const wind           = weatherElement.querySelector('.weather__item--wind');
+		const visibility     = weatherElement.querySelector('.weather__item--visibility');
 
-		// Set the location name, and weather icon.
+		// Set the location name.
 		weatherElement.querySelector('.weather__item--location').textContent = locationData.city;
-		weatherElement.querySelector('.weather__item--icon').src             = weatherData.weather.iconURL;
-		weatherElement.querySelector('.weather__item--icon').alt             = weatherData.weather.description;
+
+		// Set the icon for the weather.
+		weatherIcon.src = weatherData.weather.iconURL;
+		weatherIcon.alt = weatherData.weather.description;
 
 		// Set the text content for the weather data.
-		weatherElement.querySelector('.weather__item--feels-like').textContent = weatherData.getTemp('feelsLike');
-		weatherElement.querySelector('.weather__item--humidity').textContent   = weatherData.humidity ?? '';
-		weatherElement.querySelector('.weather__item--max').textContent        = weatherData.getTemp('max');
-		weatherElement.querySelector('.weather__item--min').textContent        = weatherData.getTemp('min');
-		weatherElement.querySelector('.weather__item--pressure').textContent   = weatherData.pressure ?? '';
-		weatherElement.querySelector('.weather__item--temp').textContent       = weatherData.getTemp('actual');
-		weatherElement.querySelector('.weather__item--wind').textContent       = weatherData.getWind('both');
-		weatherElement.querySelector('.weather__item--visibility').textContent = weatherData.getVisibility();
-
+		feelsLike.textContent  = weatherData.getTemp('feelsLike');
+		humidity.textContent   = weatherData.humidity ?? '';
+		max.textContent        = weatherData.getTemp('max');
+		min.textContent        = weatherData.getTemp('min');
+		pressure.textContent   = weatherData.pressure ?? '';
+		temp.textContent       = weatherData.getTemp('actual');
+		wind.textContent       = weatherData.getWind('both');
+		visibility.textContent = weatherData.getVisibility();
 
 		// Set the data-label attributes for CSS to fill in. This is mostly for translation purposes.
-		weatherElement.querySelector('.weather__item--feels-like').dataset.label = this.languageText('labels', 'feelsLike');
-		weatherElement.querySelector('.weather__item--humidity').dataset.label   = this.languageText('labels', 'humidity');
-		weatherElement.querySelector('.weather__item--max').dataset.label        = this.languageText('labels', 'max');
-		weatherElement.querySelector('.weather__item--min').dataset.label        = this.languageText('labels', 'min');
-		weatherElement.querySelector('.weather__item--pressure').dataset.label   = this.languageText('labels', 'pressure');
-		weatherElement.querySelector('.weather__item--temp').dataset.label       = this.languageText('labels', 'temp');
-		weatherElement.querySelector('.weather__item--wind').dataset.label       = this.languageText('labels', 'wind');
-		weatherElement.querySelector('.weather__item--visibility').dataset.label = this.languageText('labels', 'visibility');
+		feelsLike.dataset.label  = this.languageText('labels', 'feelsLike');
+		humidity.dataset.label   = this.languageText('labels', 'humidity');
+		max.dataset.label        = this.languageText('labels', 'max');
+		min.dataset.label        = this.languageText('labels', 'min');
+		pressure.dataset.label   = this.languageText('labels', 'pressure');
+		temp.dataset.label       = this.languageText('labels', 'temp');
+		wind.dataset.label       = this.languageText('labels', 'wind');
+		visibility.dataset.label = this.languageText('labels', 'visibility');
 	}
 
 	// Updates the weather from OpenWeatherMap API,
