@@ -1,0 +1,30 @@
+@use "../values";
+
+body {
+	position:         relative;
+
+	background-color: values.$color-bg-main-day;
+	font-family:      sans-serif;
+	font-size:        88%;
+
+	color:            values.$text-color;
+}
+
+.page-footer {
+	padding:     values.$padding-small;
+	font-family: values.$font-main;
+	font-size:   values.$font-size-small;
+	text-align:  center;
+	font-weight: lighter;
+}
+
+/***
+ * Utility classes
+ */
+.u-clickable {
+	cursor: pointer;
+}
+
+.u-hide-empty:empty {
+	display: none;
+}

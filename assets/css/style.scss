@@ -1,72 +1,10 @@
-* {
-	margin:     0;
-	padding:    0;
-	box-sizing: border-box;
-}
-
-$border-radius:        15px;
-$border-radius-medium: 10px;
-$border-radius-small:  5px;
-$header-bg-color:      midnightblue;
-$header-font:          Oswald, sans-serif;
-$header-text-color:    white;
-$padding-large:        25px;
-$padding-medium:       10px;
-$padding-small:        5px;
-$gap-small:            5px;
-$hover-bg-color:       rgba(255, 255, 255, 0.5);
-$hover-shadow:         rgba(0, 0, 0, 0.3);
-$text-color:           white;
-
-body {
-	position:         relative;
-
-	background-color: deepskyblue;
-	font-family:      sans-serif;
-	font-size:        88%;
-
-	color:            $text-color;
-}
-
-.page-header {
-	display:               grid;
-
-	grid-template-areas:
-		"title search settings"
-		"search-location search-location search-location";
-	grid-template-columns: 250px auto 250px;
-
-	padding:               $padding-medium;
-	font-family:           $header-font;
-
-	&__title {
-		grid-area:   title;
-		font-size:   2rem;
-		font-weight: lighter;
-	}
-}
-
-.page-footer {
-	padding:     $padding-small;
-	font-family: Oswald, sans-serif;
-	font-size:   0.7rem;
-	text-align:  center;
-	font-weight: lighter;
-}
+@use "values";
+@use 'sections/header';
+@use 'sections/content';
 
 // Settings
 .settings {
-	grid-area:   settings;
-	display:     flex;
-	flex-flow:   column nowrap;
-	align-items: flex-end;
-
 	&__list {
-		display:    flex;
-		flex-wrap:  nowrap;
-		list-style: none;
-		gap:        .25rem;
-
 		&--language {
 			.settings__item {
 				border-radius: 50%;
@@ -83,11 +21,8 @@ body {
 		}
 
 		&--units {
-			font-size:   0.8rem;
-			font-weight: lighter;
-
 			.settings__item {
-				text-shadow: 0 5px 5px $hover-shadow;
+				text-shadow: 0 5px 5px values.$hover-shadow;
 
 				&:hover,
 				&.active:hover {
@@ -106,119 +41,35 @@ body {
 		border-radius: 1rem;
 
 		transition:    transform .25s ease, box-shadow .25s ease, text-shadow .25s ease;
-		text-shadow:   0 0 0 $hover-shadow;
-		box-shadow:    0 0 0 $hover-shadow;
+		text-shadow:   0 0 0 values.$hover-shadow;
+		box-shadow:    0 0 0 values.$hover-shadow;
 
 		&--language {
 			width:         1rem;
 			height:        1rem;
 
 			border-radius: 50%;
-			box-shadow:    0 5px 5px $hover-shadow;
-		}
-	}
-}
-
-// Search Form
-.search {
-	grid-area:  search;
-
-	transition: transform .25s ease;
-
-	&:focus-within {
-		transform: scale(1.1);
-	}
-
-	&__container {
-		display:               grid;
-
-		grid-template-areas:
-			"input input button"
-			"label label . "
-			"options options .";
-		grid-template-columns: auto auto 60px;
-
-		position:              relative;
-		border:                none;
-	}
-
-	&__button {
-		grid-area:     button;
-
-		padding:       $padding-medium;
-		border:        none;
-		border-radius: 0 $border-radius $border-radius 0;
-		box-shadow:    0 3px 3px $hover-shadow;
-	}
-
-	&__input {
-		grid-area:     input;
-
-		padding:       $padding-medium;
-		border:        none;
-		border-right:  1px solid rgba(0, 0, 0, 0.2);
-		border-radius: $border-radius 0 0 $border-radius;
-
-		text-align:    center;
-		box-shadow:    0 5px 5px $hover-shadow;
-	}
-
-	&__label {
-		grid-area:  label;
-
-		padding:    $padding-small;
-		font-size:  0.6rem;
-		font-style: italic;
-		text-align: center;
-
-	}
-
-	&__list {
-		grid-area: search-location;
-		display:   flex;
-		flex-wrap: nowrap;
-	}
-
-	&__list--options {
-		grid-area:        options;
-		width:            100%;
-
-		display:          flex;
-		flex-flow:        column nowrap;
-		position:         absolute;
-		top:              -1rem;
-		padding:          $padding-small;
-		z-index:          2;
-		list-style:       none;
-
-		background-color: rgba(0, 0, 0, 0.6);
-		border-radius:    $border-radius-medium;
-		box-shadow:       0 5px 10px $hover-shadow;
-
-		&:empty {
-			display: none;
+			box-shadow:    0 5px 5px values.$hover-shadow;
 		}
 	}
 }
 
 .search__option {
-	display:         flex;
-	flex-wrap:       nowrap;
 	justify-content: space-between;
-	padding:         $padding-small;
+	padding:         values.$padding-small;
 	transition:      transform .25s ease;
 	font-family:     Oswald, sans-serif;
 
 	&:first-of-type {
-		border-radius: $border-radius-medium $border-radius-medium 0 0;
+		border-radius: values.$border-radius-medium values.$border-radius-medium 0 0;
 	}
 
 	&:last-of-type {
-		border-radius: 0 0 $border-radius-medium $border-radius-medium;
+		border-radius: 0 0 values.$border-radius-medium values.$border-radius-medium;
 	}
 
 	&:hover {
-		background-color: $hover-bg-color;
+		background-color: values.$hover-bg-color;
 		transform:        scale(1.02);
 	}
 
@@ -242,25 +93,19 @@ body {
 
 // Location History Item
 .search__item {
-	display:            grid;
-	grid-template-rows: repeat(3, 1fr);
-	grid-template-areas:
-        "city temp icon"
-        "state temp icon"
-        "coordinates conditions conditions";
 	grid-template-rows: 22px 20px 20px;
 	position:           relative;
-	padding:            $padding-small;
-	padding-left:       $padding-medium;
+	padding:            values.$padding-small;
+	padding-left:       values.$padding-medium;
 
-	border-radius:      $border-radius;
+	border-radius:      values.$border-radius-large;
 
-	text-shadow:        0 3px 3px $hover-shadow;
+	text-shadow:        0 3px 3px values.$hover-shadow;
 	transition:         background-color .25s ease, box-shadow .25s ease, transform .25s ease;
 
 	&:hover {
-		background-color: $hover-bg-color;
-		box-shadow:       0 5px 5px $hover-shadow;
+		background-color: values.$hover-bg-color;
+		box-shadow:       0 5px 5px values.$hover-shadow;
 		transform:        scale(1.1);
 	}
 
@@ -290,7 +135,7 @@ body {
 		&--temp {
 			grid-area:    temp;
 			grid-row:     span 2;
-			padding-left: $padding-medium;
+			padding-left: values.$padding-medium;
 			align-self:   start;
 			font-size:    2.1rem;
 		}
@@ -301,7 +146,7 @@ body {
 			position:   relative;
 			height:     100%;
 
-			filter:     drop-shadow(0 3px 3px $hover-shadow);
+			filter:     drop-shadow(0 3px 3px values.$hover-shadow);
 		}
 
 		&--conditions {
@@ -327,8 +172,8 @@ body {
 	grid-template-rows:    repeat(5, 150px);
 	grid-template-columns: auto 100px;
 
-	gap:                   $padding-medium;
-	padding:               $padding-medium;
+	gap:                   values.$padding-medium;
+	padding:               values.$padding-medium;
 }
 
 .weather {
@@ -344,13 +189,13 @@ body {
 		position:         relative;
 		z-index:          1;
 
-		padding:          $padding-medium;
+		padding:          values.$padding-medium;
 
 		background-color: rgba(0, 0, 0, 0.3);
 		border:           1px solid rgba(0, 0, 0, 0.1);
-		border-radius:    $border-radius-medium;
+		border-radius:    values.$border-radius-medium;
 		box-shadow:       0px 5px 5px rgba(0, 0, 0, 0.5);
-		color:            $header-text-color;
+		//color:            values.$header-text-color;
 
 		transition:       background-color .25s ease, transform .25s ease;
 
@@ -394,7 +239,7 @@ body {
 		}
 
 		&:hover {
-			background-color: $hover-bg-color;
+			background-color: values.$hover-bg-color;
 		}
 
 		&:not(:nth-of-type(2)) {
@@ -450,287 +295,3 @@ body {
 		font-size: 1.5rem;
 	}
 }
-
-//.forecast {
-//	position:        relative;
-//	display:         flex;
-//	gap:             1rem;
-//	flex-flow:       column;
-//	align-items:     flex-end;
-//	justify-content: center;
-//	height:          100vh;
-//	padding:         1rem;
-//
-//	.active:only-child {
-//		// TODO: Change the main card with this, using what's in .weather. I will need to find a way to link,
-//		//  .card--day and .weather. Maybe I can just use .card--day, .weather; or maybe I need to add a card class to
-//		//  .weather.
-//	}
-//}
-//
-//.weather {
-//	//display: grid;
-//
-//
-//	position: absolute;
-//	top:      0;
-//	left:     0;
-//	width:    84vw;
-//	height:   100vh;
-//	padding:  $padding-large;
-//	order:    1;
-//	z-index:  1;
-//
-//	color:    white;
-//
-//	&__item {
-//
-//		&[data-label]:not([data-label=""])::before {
-//			display: inline-block;
-//			content: attr(data-label);
-//		}
-//
-//		&--location {
-//			grid-area:   location;
-//			font-family: $header-font;
-//			font-size:   3rem;
-//		}
-//
-//		&--time {
-//			font-family:      $header-font;
-//			font-size:        4rem;
-//			padding:          $padding-large;
-//
-//			background-color: rgba(0, 0, 0, 0.5);
-//			border-radius:    15px;
-//			width:            auto;
-//		}
-//	}
-//}
-//
-//.card {
-//	display:       flex;
-//	width:         15vw;
-//
-//	border-radius: 1rem;
-//
-//	&__header {
-//		font-style: italic;
-//		padding:    .5rem;
-//	}
-//
-//	&__item {
-//		&--humidity,
-//		&--pressure,
-//		&--time,
-//		&--wind {display: none;}
-//
-//		&--temp {font-size: 2rem;}
-//	}
-//
-//	&--day {
-//		z-index:          2;
-//		flex-flow:        column-reverse nowrap;
-//
-//		color:            white;
-//		background-color: rgba(0, 0, 0, 0.3);
-//		border:           1px solid rgba(0, 0, 0, 0.1);
-//		box-shadow:       5px 5px 5px rgba(0, 0, 0, 0.5);
-//
-//		transition:       transform .25s ease, background-color .25s ease, box-shadow .25s ease;
-//
-//		&:hover {
-//			z-index:          3;
-//
-//			transform:        scale(1.1);
-//			background-color: rgba(255, 255, 255, 0.3);
-//			box-shadow:       0px 5px 15px rgba(0, 0, 0, 0.3);
-//
-//		}
-//	}
-//
-//	&--time {
-//		display:     flex;
-//		flex-flow:   row-reverse nowrap;
-//		align-items: center;
-//		list-style:  none;
-//
-//		&:not(:first-of-type) {display: none;}
-//
-//		&:first-of-type {
-//		}
-//	}
-//}
-//
-//.clock {
-//	&__date {}
-//
-//	&__time {}
-//}
-
-/***
- * Utility classes
- */
-.u-clickable {
-	cursor: pointer;
-}
-
-.u-hide-empty:empty {
-	display: none;
-}
-
-//.page-header {
-//	display:          flex;
-//	flex-wrap:        wrap;
-//	justify-content:  space-between;
-//
-//	background-color: $header-bg-color;
-//	color:            $header-text-color;
-//
-//	&__title {
-//		flex:        1 1 50%;
-//		padding:     1rem;
-//
-//		font-family: Oswald, sans-serif;
-//		font-size:   2rem;
-//		font-style:  italic;
-//		font-weight: lighter;
-//	}
-//}
-//
-//.alert {
-//	position:         relative;
-//	top:              -2rem;
-//	width:            100%;
-//	padding:          .5rem;
-//
-//	background-color: red;
-//
-//	transition:       top .5s ease;
-//
-//	&.active {
-//		top: 0;
-//	}
-//
-//	&__message {
-//		width:      auto;
-//		text-align: center;
-//	}
-//}
-//
-//
-//.search {
-//	display:       flex;
-//	flex-flow:     column nowrap;
-//	align-items:   center;
-//	justify-items: center;
-//	width:         100%;
-//	margin:        auto;
-//
-//	&__button {
-//		padding:       .25rem .5rem;
-//		border:        1px solid black;
-//		border-radius: 0 1rem 1rem 0;
-//
-//		&:hover {
-//			cursor: pointer;
-//		}
-//	}
-//
-//	&__container {
-//		display:   flex;
-//		flex-flow: row wrap;
-//		border:    none;
-//		width:     20rem;
-//		padding:   1rem;
-//	}
-//
-//	&__description {
-//		&--city {
-//			width:       100%;
-//
-//			font-size:   1rem;
-//			font-weight: bold;
-//		}
-//
-//		&--stco,
-//		&--coords {
-//			font-size:   .7rem;
-//			font-weight: lighter;
-//		}
-//	}
-//
-//	&__input {
-//		padding:       .25rem .75rem;
-//		border:        1px solid black;
-//		border-right:  0;
-//		border-radius: 1rem 0 0 1rem;
-//		width: 15rem;
-//
-//		font-size:     1.2rem;
-//	}
-//
-//	&__item {
-//		display:          flex;
-//		flex-flow:        row wrap;
-//		gap:              .5rem;
-//		align-items:      center;
-//		width:            10rem;
-//
-//		padding:          .5rem;
-//
-//		background-color: rgba(0, 0, 0, .1);
-//		border:           1px solid white;
-//
-//		&:hover {
-//			background-color: rgba(255,255,255,0.2);
-//			cursor: pointer;
-//		}
-//	}
-//
-//	&__label {
-//		display:     inline-block;
-//		margin-left: 1rem;
-//		padding:     .25rem;
-//		font-size:   .7rem;
-//	}
-//
-//	&__list--location {
-//		display:          flex;
-//		flex-flow:        row wrap;
-//		background-color: rgba(0, 0, 0, .1);
-//		list-style:       none;
-//		width:            100%;
-//	}
-//}
-//
-//.forecast {
-//	display:   flex;
-//	flex-flow: row wrap;
-//
-//	gap:       .5rem;
-//}
-//
-//.weather {
-//	display:    flex;
-//	flex-flow:  row wrap;
-//	flex-basis: 100%;
-//}
-//
-//.card {
-//	display:          flex;
-//	flex:             1 1 calc(20% - 1rem);
-//	flex-flow:        column;
-//	width:            20%;
-//	list-style:       none;
-//
-//	background-color: skyblue;
-//
-//	&--time:not(:first-of-type) {
-//		display: none;
-//	}
-//	&__item::before {
-//		display: inline-block;
-//		content: attr(data-label);
-//	}
-//}

@@ -1,0 +1,103 @@
+@use "../values";
+
+// Location Search Box
+.search {
+	grid-area:  search;
+	display:    grid;
+
+	grid-template-areas:
+		"input input button"
+		"label label . "
+		"options options .";
+
+	// Set the transition time for transformations.
+	transition: values.$transition-transform;
+
+	// On hover, and descendant focus: scale the form.
+	&:hover,
+	&:focus-within {
+		transform: scale(1.1);
+	}
+
+	&__button,
+	&__input {
+		padding:    values.$padding-medium;
+		border:     none;
+
+		box-shadow: values.$shadow-medium;
+		text-align: center;
+	}
+
+	// The Go button
+	&__button {
+		grid-area:     button;
+
+		border-radius: 0 values.$border-radius-large values.$border-radius-large 0;
+	}
+
+	// The search field
+	&__input {
+		grid-area:     input;
+
+		border-right:  values.$border;
+		border-radius: values.$border-radius-large 0 0 values.$border-radius-large;
+	}
+
+	// The input label (city, state, zip...)
+	&__label {
+		grid-area:  label;
+
+		padding:    values.$padding-small;
+		font-size:  values.$font-size-tiny;
+		font-style: italic;
+		text-align: center;
+	}
+
+	&__list,
+	&__list--options {
+		display:   flex;
+		flex-wrap: nowrap;
+	}
+
+	// Location history list
+	&__list {
+		grid-area: search-location;
+	}
+
+	// Multiple-choice location options list
+	&__list--options {
+		grid-area:        options;
+
+		display:          flex;
+		flex-direction:   column;
+		position:         absolute;
+		top:              -1rem;
+		width:            100%;
+		// TODO: Figure out why this z-index isn't working.
+		padding:          values.$padding-small;
+		z-index:          2;
+
+		list-style:       none;
+		background-color: values.$color-bg-dark;
+		border-radius:    values.$border-radius-medium;
+		box-shadow:       values.$shadow-large;
+
+		&:empty {display: none;}
+	}
+}
+
+// Location history list item
+.search__item {
+	display: grid;
+
+	grid-template-areas:
+        "city temp icon"
+        "state temp icon"
+        "coordinates conditions conditions";
+}
+
+// Multiple-choice location option
+.search__options {
+	display:   flex;
+	flex-wrap: nowrap;
+}

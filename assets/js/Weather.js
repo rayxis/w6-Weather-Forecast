@@ -3,12 +3,12 @@
 	 - Finish Readme (description and screenshots)
 	 - Finish design (mobile and desktop)
 	 - Click to change day (.active class already toggles).
-	 - For locationCurrent(), maybe mark the history item as current location with an icon next to the lat/lon, but not actually focus on it on reload.
      - Weird design bug: when multiple search options pop up, the weather behind clashes.
+	 - On click (or escape key) outside of Options list, close list.
      - Set background color to reflect time of day / weather.
 	 - Check comments
-	 - Implement user's current location
      - Local time and remote time
+	 - For locationCurrent(), maybe mark the history item as current location with an icon next to the lat/lon, but not actually focus on it on reload.
      - Error testing and handling (and messages for the user)
  ***/
 dayjs.extend(window.dayjs_plugin_utc);

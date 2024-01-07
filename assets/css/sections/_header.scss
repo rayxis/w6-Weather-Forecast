@@ -1,0 +1,21 @@
+@use "../values";
+@use "search";
+@use "settings";
+
+.page-header {
+	display:               grid;
+
+	grid-template-areas:
+		"title search settings"
+		"search-location search-location search-location";
+	grid-template-columns: 250px auto 250px;
+	padding:               values.$padding-medium;
+
+	font-family:           values.$font-main;
+
+	&__title {
+		grid-area:   title;
+		font-size:   values.$font-size-large;
+		font-weight: lighter;
+	}
+}

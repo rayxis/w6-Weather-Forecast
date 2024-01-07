@@ -1,0 +1,31 @@
+$color-shadow:         rgba(0, 0, 0, 0.3);
+$color-border:         rgba(0, 0, 0, 0.2);
+$color-bg-dark:        rgba(0, 0, 0, 0.6);
+$color-bg-main-day:    deepskyblue;
+
+$border:               1px solid $color-border;
+$border-radius-large:  15px;
+$border-radius-medium: 10px;
+$border-radius-small:  5px;
+$font-main:            Oswald, sans-serif;
+$font-size-large:      2rem;
+$font-size-small:      0.7rem;
+$font-size-tiny:       0.6rem;
+$shadow-small:         0 3px 3px $color-shadow;
+$shadow-medium:        0 5px 5px $color-shadow;
+$shadow-large:         0 10px 10px $color-shadow;
+$transition-transform: transform .25s ease;
+
+$padding-large:        25px;
+$padding-medium:       10px;
+$padding-small:        5px;
+$gap-small:            5px;
+$hover-bg-color:       rgba(255, 255, 255, 0.5);
+$hover-shadow:         rgba(0, 0, 0, 0.3);
+$text-color:           white;
+
+* {
+	margin:     0;
+	padding:    0;
+	box-sizing: border-box;
+}

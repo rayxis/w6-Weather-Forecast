@@ -1,0 +1,30 @@
+@use "../values";
+
+// Settings
+.settings {
+	grid-area:   settings;
+	display:     flex;
+	flex-flow:   column nowrap;
+	align-items: flex-end;
+
+	// Items for Language and Measurement Units Lists
+	&__item {
+	}
+
+	// Language and Measurement Units Lists
+	&__list {
+		display:    flex;
+		flex-wrap:  nowrap;
+		gap:        .25rem;
+		list-style: none;
+
+		// Language Selection
+		&--language {}
+
+		// Measurement Unit Selection
+		&--units {
+			font-size:   values.$font-size-small;
+			font-weight: lighter;
+		}
+	}
+}
