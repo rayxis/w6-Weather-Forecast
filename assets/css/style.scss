@@ -4,14 +4,6 @@
 	box-sizing: border-box;
 }
 
-:root {
-	--bg-color:              white;
-	--border-color:          rgba(0, 0, 0.1);
-	--header-bg-color-hover: rgba(100, 100, 150, 0.9);
-	--popup-bg-color:        rgba(100, 100, 150, 0.9);
-	--popup-bg-color-hover:  rgba(0, 0, 0, 0.3);
-}
-
 $border-radius:        15px;
 $border-radius-medium: 10px;
 $border-radius-small:  5px;
@@ -24,32 +16,42 @@ $padding-small:        5px;
 $gap-small:            5px;
 $hover-bg-color:       rgba(255, 255, 255, 0.5);
 $hover-shadow:         rgba(0, 0, 0, 0.3);
+$text-color:           white;
 
 body {
 	position:         relative;
 
-	background-color: midnightblue;
+	background-color: deepskyblue;
 	font-family:      sans-serif;
 	font-size:        88%;
+
+	color:            $text-color;
 }
 
 .page-header {
-	display: grid;
+	display:               grid;
 
 	grid-template-areas:
 		"title search settings"
 		"search-location search-location search-location";
+	grid-template-columns: 250px auto 250px;
 
-	padding: $padding-medium $padding-large;
-
-	color:   $header-text-color;
+	padding:               $padding-medium;
+	font-family:           $header-font;
 
 	&__title {
 		grid-area:   title;
-		font-family: $header-font;
 		font-size:   2rem;
 		font-weight: lighter;
 	}
+}
+
+.page-footer {
+	padding:     $padding-small;
+	font-family: Oswald, sans-serif;
+	font-size:   0.7rem;
+	text-align:  center;
+	font-weight: lighter;
 }
 
 // Settings
@@ -81,16 +83,19 @@ body {
 		}
 
 		&--units {
+			font-size:   0.8rem;
+			font-weight: lighter;
+
 			.settings__item {
+				text-shadow: 0 5px 5px $hover-shadow;
+
 				&:hover,
 				&.active:hover {
-					transform:   scale(1.5);
-					text-shadow: 0 7.5px 15px $hover-shadow;
+					transform: scale(1.5);
 				}
 
 				&.active {
-					transform:   scale(1.3);
-					text-shadow: 0 5px 5px $hover-shadow;
+					transform: scale(1.3);
 				}
 			}
 		}
@@ -116,18 +121,25 @@ body {
 
 // Search Form
 .search {
-	grid-area: search;
+	grid-area:  search;
+
+	transition: transform .25s ease;
+
+	&:focus-within {
+		transform: scale(1.1);
+	}
 
 	&__container {
-		display:  grid;
+		display:               grid;
 
 		grid-template-areas:
 			"input input button"
-			"label label ."
+			"label label . "
 			"options options .";
+		grid-template-columns: auto auto 60px;
 
-		position: relative;
-		border:   none;
+		position:              relative;
+		border:                none;
 	}
 
 	&__button {
@@ -136,6 +148,7 @@ body {
 		padding:       $padding-medium;
 		border:        none;
 		border-radius: 0 $border-radius $border-radius 0;
+		box-shadow:    0 3px 3px $hover-shadow;
 	}
 
 	&__input {
@@ -147,6 +160,7 @@ body {
 		border-radius: $border-radius 0 0 $border-radius;
 
 		text-align:    center;
+		box-shadow:    0 5px 5px $hover-shadow;
 	}
 
 	&__label {
@@ -156,6 +170,7 @@ body {
 		font-size:  0.6rem;
 		font-style: italic;
 		text-align: center;
+
 	}
 
 	&__list {
@@ -183,10 +198,6 @@ body {
 		&:empty {
 			display: none;
 		}
-	}
-
-	&__list-location {
-
 	}
 }
 
@@ -238,14 +249,19 @@ body {
         "state temp icon"
         "coordinates conditions conditions";
 	grid-template-rows: 22px 20px 20px;
+	position:           relative;
 	padding:            $padding-small;
 	padding-left:       $padding-medium;
 
 	border-radius:      $border-radius;
 
+	text-shadow:        0 3px 3px $hover-shadow;
+	transition:         background-color .25s ease, box-shadow .25s ease, transform .25s ease;
+
 	&:hover {
 		background-color: $hover-bg-color;
 		box-shadow:       0 5px 5px $hover-shadow;
+		transform:        scale(1.1);
 	}
 
 	.search__desc {
@@ -284,6 +300,8 @@ body {
 			object-fit: contain;
 			position:   relative;
 			height:     100%;
+
+			filter:     drop-shadow(0 3px 3px $hover-shadow);
 		}
 
 		&--conditions {
@@ -299,121 +317,256 @@ body {
 }
 
 .forecast {
-	position:        relative;
-	display:         flex;
-	gap:             1rem;
-	flex-flow:       column;
-	align-items:     flex-end;
-	justify-content: center;
-	height:          100vh;
-	padding:         1rem;
+	display:               grid;
+	grid-template-areas:
+		"weather day2"
+		"weather day3"
+		"weather day4"
+        "day1 day5"
+	    "day1 day6";
+	grid-template-rows:    repeat(5, 150px);
+	grid-template-columns: auto 100px;
 
-	.active:only-child {
-		// TODO: Change the main card with this, using what's in .weather. I will need to find a way to link,
-		//  .card--day and .weather. Maybe I can just use .card--day, .weather; or maybe I need to add a card class to
-		//  .weather.
-	}
+	gap:                   $padding-medium;
+	padding:               $padding-medium;
 }
 
 .weather {
-	//display: grid;
-
-
-	position: absolute;
-	top:      0;
-	left:     0;
-	width:    84vw;
-	height:   100vh;
-	padding:  $padding-large;
-	order:    1;
-	z-index:  1;
-
-	color:    white;
-
-	&__item {
-
-		&[data-label]:not([data-label=""])::before {
-			display: inline-block;
-			content: attr(data-label);
-		}
-
-		&--location {
-			grid-area:   location;
-			font-family: $header-font;
-			font-size:   3rem;
-		}
-
-		&--time {
-			font-family:      $header-font;
-			font-size:        4rem;
-			padding:          $padding-large;
-
-			background-color: rgba(0, 0, 0, 0.5);
-			border-radius:    15px;
-			width:            auto;
-		}
-	}
+	grid-column: 1;
+	grid-row:    2 / span 2;
 }
 
 .card {
-	display:       flex;
-	width:         15vw;
-
-	border-radius: 1rem;
-
-	&__header {
-		font-style: italic;
-		padding:    .5rem;
-	}
-
-	&__item {
-		&--humidity,
-		&--pressure,
-		&--time,
-		&--wind {display: none;}
-
-		&--temp {font-size: 2rem;}
-	}
-
 	&--day {
-		z-index:          2;
-		flex-flow:        column-reverse nowrap;
+		display:          flex;
+		flex-flow: row wrap;
+		justify-content:  space-evenly;
+		position:         relative;
+		z-index:          1;
 
-		color:            white;
+		padding:          $padding-medium;
+
 		background-color: rgba(0, 0, 0, 0.3);
 		border:           1px solid rgba(0, 0, 0, 0.1);
-		box-shadow:       5px 5px 5px rgba(0, 0, 0, 0.5);
+		border-radius:    $border-radius-medium;
+		box-shadow:       0px 5px 5px rgba(0, 0, 0, 0.5);
+		color:            $header-text-color;
 
-		transition:       transform .25s ease, background-color .25s ease, box-shadow .25s ease;
+		transition:       background-color .25s ease, transform .25s ease;
+
+		// Forecast for the day... change this to .active later.
+		&.active,
+		&:nth-of-type(2) {
+			grid-area: day1;
+
+			.card__header {
+				flex: 1 0 100%;
+			}
+			.card__subtitle {
+				&--date {font-size: 2rem;}
+				&--day {font-size: 1rem;}
+			}
+
+			// Hide the average.
+			.card--time:first-of-type {
+				display: none;
+			}
+		}
+
+		&:nth-of-type(3) {
+			grid-area: day2;
+		}
+
+		&:nth-of-type(4) {
+			grid-area: day3;
+		}
+
+		&:nth-of-type(5) {
+			grid-area: day4;
+		}
+
+		&:nth-of-type(6) {
+			grid-area: day5;
+		}
+
+		&:nth-of-type(7) {
+			grid-area: day6;
+		}
 
 		&:hover {
-			z-index:          3;
+			background-color: $hover-bg-color;
+		}
 
-			transform:        scale(1.1);
-			background-color: rgba(255, 255, 255, 0.3);
-			box-shadow:       0px 5px 15px rgba(0, 0, 0, 0.3);
+		&:not(:nth-of-type(2)) {
+			flex-flow:   column nowrap;
+			align-items: center;
 
+			&:hover {
+				z-index:   3;
+				transform: scale(1.1);
+			}
+
+			.card--time {
+				&:not(:first-of-type) {display: none;}
+			}
+
+			.card__item {
+				&--time,
+				&--wind,
+				&--humidity,
+				&--pressure {display: none;}
+
+				&--icon {
+					height: 50px;
+				}
+			}
 		}
 	}
 
 	&--time {
-		display:     flex;
-		flex-flow:   row-reverse nowrap;
-		align-items: center;
-		list-style:  none;
+		list-style: none;
+	}
+}
 
-		&:not(:first-of-type) {display: none;}
+.card__header {
+	align-self:  flex-start;
+	font-family: Oswald, sans-serif;
 
-		&:first-of-type {
+	.card__subtitle {
+		font-weight: normal;
+
+		&--date {
+			font-size: 0.9rem;
+		}
+
+		&--day {
+			font-size: 0.8rem;
 		}
 	}
 }
 
-.clock {
-	&__date {}
-
-	&__time {}
+.card__item {
+	&--temp {
+		font-size: 1.5rem;
+	}
 }
+
+//.forecast {
+//	position:        relative;
+//	display:         flex;
+//	gap:             1rem;
+//	flex-flow:       column;
+//	align-items:     flex-end;
+//	justify-content: center;
+//	height:          100vh;
+//	padding:         1rem;
+//
+//	.active:only-child {
+//		// TODO: Change the main card with this, using what's in .weather. I will need to find a way to link,
+//		//  .card--day and .weather. Maybe I can just use .card--day, .weather; or maybe I need to add a card class to
+//		//  .weather.
+//	}
+//}
+//
+//.weather {
+//	//display: grid;
+//
+//
+//	position: absolute;
+//	top:      0;
+//	left:     0;
+//	width:    84vw;
+//	height:   100vh;
+//	padding:  $padding-large;
+//	order:    1;
+//	z-index:  1;
+//
+//	color:    white;
+//
+//	&__item {
+//
+//		&[data-label]:not([data-label=""])::before {
+//			display: inline-block;
+//			content: attr(data-label);
+//		}
+//
+//		&--location {
+//			grid-area:   location;
+//			font-family: $header-font;
+//			font-size:   3rem;
+//		}
+//
+//		&--time {
+//			font-family:      $header-font;
+//			font-size:        4rem;
+//			padding:          $padding-large;
+//
+//			background-color: rgba(0, 0, 0, 0.5);
+//			border-radius:    15px;
+//			width:            auto;
+//		}
+//	}
+//}
+//
+//.card {
+//	display:       flex;
+//	width:         15vw;
+//
+//	border-radius: 1rem;
+//
+//	&__header {
+//		font-style: italic;
+//		padding:    .5rem;
+//	}
+//
+//	&__item {
+//		&--humidity,
+//		&--pressure,
+//		&--time,
+//		&--wind {display: none;}
+//
+//		&--temp {font-size: 2rem;}
+//	}
+//
+//	&--day {
+//		z-index:          2;
+//		flex-flow:        column-reverse nowrap;
+//
+//		color:            white;
+//		background-color: rgba(0, 0, 0, 0.3);
+//		border:           1px solid rgba(0, 0, 0, 0.1);
+//		box-shadow:       5px 5px 5px rgba(0, 0, 0, 0.5);
+//
+//		transition:       transform .25s ease, background-color .25s ease, box-shadow .25s ease;
+//
+//		&:hover {
+//			z-index:          3;
+//
+//			transform:        scale(1.1);
+//			background-color: rgba(255, 255, 255, 0.3);
+//			box-shadow:       0px 5px 15px rgba(0, 0, 0, 0.3);
+//
+//		}
+//	}
+//
+//	&--time {
+//		display:     flex;
+//		flex-flow:   row-reverse nowrap;
+//		align-items: center;
+//		list-style:  none;
+//
+//		&:not(:first-of-type) {display: none;}
+//
+//		&:first-of-type {
+//		}
+//	}
+//}
+//
+//.clock {
+//	&__date {}
+//
+//	&__time {}
+//}
 
 /***
  * Utility classes

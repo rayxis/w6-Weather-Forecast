@@ -20,11 +20,14 @@ const languages = {
 			searchInput:  'Einen Ort eingeben',
 			searchLabel:  'Stadt, Staat, Land, Postleitzahl oder Lat/Lon',
 			temp:         'Temp',
-			title:        'Wettervorhersage',
 			wind:         'Wind',
 			visibility:   'Sichtbarkeit'
 		},
-		locale:      'de-DE'
+		locale:      'de-DE',
+		text:        {
+			footer: 'Die Seite wurde von Ray Beliveau programmiert und gestaltet.',
+			title:  'Wettervorhersage'
+		}
 	},
 	'en-US': {
 		description: 'English',
@@ -48,11 +51,14 @@ const languages = {
 			searchInput:  'Enter a location',
 			searchLabel:  'City, State, Country, Zip or Lat/Lon',
 			temp:         'Temp',
-			title:        'Weather Forecast',
 			wind:         'Wind',
 			visibility:   'Visibility'
 		},
-		locale: 'en-US'
+		locale: 'en-US',
+		text:   {
+			footer: 'Page coded and designed by Ray Beliveau.',
+			title:  'Weather Forecast'
+		}
 	},
 	'es-ES': {
 		dayjs:       'https://cdn.jsdelivr.net/npm/dayjs@1.11/locale/es.js',
@@ -75,11 +81,14 @@ const languages = {
 			searchInput:  'Introduzca una ubicación',
 			searchLabel:  'Ciudad, Estado, País, Código Postal o Lat/Lon',
 			temp:         'Temp',
-			title:        'Pronóstico del Tiempo',
 			wind:         'Viento',
 			visibility:   'Visibilidad'
 		},
-		locale:      'es-ES'
+		locale:      'es-ES',
+		text:        {
+			footer: 'Página codificada y diseñada por Ray Beliveau.',
+			title:  'Pronóstico del Tiempo'
+		}
 	},
 	'fr-FR': {
 		dayjs:       'https://cdn.jsdelivr.net/npm/dayjs@1.11/locale/fr.js',
@@ -102,10 +111,13 @@ const languages = {
 			searchInput:  'Saisir un lieu',
 			searchLabel:  'Ville, État, Pays, Zip ou Lat/Lon',
 			temp:         'Temp',
-			title:        'Prévisions Météorologiques',
 			wind:         'Vent',
 			visibility:   'Visibilité'
 		},
-		locale:      'fr-FR'
+		locale:      'fr-FR',
+		text:        {
+			footer: 'Page codée et dessinée par Ray Beliveau.',
+			title:  'Prévisions Météorologiques'
+		}
 	}
 };

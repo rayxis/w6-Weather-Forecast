@@ -1,21 +1,15 @@
 /***
  TODO:
-  - Bugs
-	 - language data is being reset on reload.
-  - Organize constructor()
-  - Finish Readme (description and screenshots)
-  - Error testing and handling (and messages for the user)
-  - Location (Functions done)
-     - Get user's current location
-	 - Local time and time where you are.
-  - Weather
-     - Average weather / day?
-  - Design
-     - Scalable for mobile
-     - Header (1 thing): the width of search is too variable. Title should be a fixed width, settings should be a fixed width, and search should (for the most part) be a fixed width).
-     - Location Section
-     - Weather Section
-     - Set background color to reflect weather conditions / daytime. Maybe background of cards can be a weather image.
+	 - Finish Readme (description and screenshots)
+	 - Finish design (mobile and desktop)
+	 - Click to change day (.active class already toggles).
+	 - For locationCurrent(), maybe mark the history item as current location with an icon next to the lat/lon, but not actually focus on it on reload.
+     - Weird design bug: when multiple search options pop up, the weather behind clashes.
+     - Set background color to reflect time of day / weather.
+	 - Check comments
+	 - Implement user's current location
+     - Local time and remote time
+     - Error testing and handling (and messages for the user)
  ***/
 dayjs.extend(window.dayjs_plugin_utc);
 
@@ -30,7 +24,7 @@ class Weather {
 	};
 	//  Data storage
 	data      = {
-		cacheLoaded:  false,    // Flag for if the page has loaded all of the cached data.
+		cacheLoaded:  false,    // Flag for if the page has loaded all the cached data.
 		functions:    {},       // Event handler function storage
 		location:     [],       // Location object storage
 		numberFormat: undefined // Number formatting for different locales.
@@ -43,7 +37,9 @@ class Weather {
 		locationSearchButton: document.querySelector('.search__button'),
 		locationSearchInput:  document.querySelector('.search__input'),
 		locationSearchLabel:  document.querySelector('.search__label'),
+		pageFooter:           document.querySelector('.page-footer'),
 		pageHeader:           document.querySelector('.page-header'),
+		pageTitle:            document.querySelector('.page-header__title'),
 		settingsLanguageList: document.querySelector('.settings__list--language'),
 		settingsUnitsList:    document.querySelector('.settings__list--units'),
 		weather:              document.querySelector('.weather')
@@ -110,10 +106,11 @@ class Weather {
 		// load the units menu).
 		this.languageMenuBuild();
 		this.apiCacheLoad('settings');
+		// Look up user's current location.
+		this.locationCurrent();
 
-		this.languageSet(this.settings.language);
 		// Set the language from settings, or falling back to the browser's detected language, defaulting to English.
-		// this.languageSet(this.languages[this.settings.language] || this.languages[navigator.language] || this.languages['en-US']);
+		this.languageSet(this.settings.language || this.languages[navigator.language] || this.languages['en-US']);
 		this.apiCacheLoad('location');
 
 		// Clock
@@ -152,6 +149,7 @@ class Weather {
 					cacheKey = this.settings.cacheSettings;
 					apiData  = JSON.stringify(this.settings);
 					break;
+				// An invalid type was specified.
 				default:
 					throw new Error(`Invalid data cache type used: "$type"`);
 			}
@@ -270,14 +268,10 @@ class Weather {
 			// If the response is not okay, throw an error.
 			if (!response.ok) throw new Error('networkError');
 
-				/***
-				 * Filter. Create an object literal called states, and then loop through that and get the state name to
-				 * compare against
-				 ***/
-
 			// If a callback was provided, return the value from that, otherwise return the parsed response.
 			else return callback ? response.json().then(response => callback(response)) : response.json();
 		} catch (error) {
+			console.log('apiFetchJSON failure:', error);
 			this.alertUser(this.languageText('error', error));
 		}
 	}
@@ -454,28 +448,35 @@ class Weather {
 			dayCard.querySelector('.card__subtitle--date').textContent = day.format('MMMM D');
 			dayCard.querySelector('.card__subtitle--day').textContent  = day.format('dddd');
 
-			// Loop through the time blocks and add them to the days.
-			dayData.forEach(dayData => dayCard.appendChild(timeBuild(dayData)));
-
-			// TODO: Finish.
 			// Build an average
 			const dayAverage = {
-				temp: dayData.reduce((total, forecast) => total + forecast.temp) / dayData.length,
-				max:  [...dayData].sort((a, b) => b.temp - a.temp)[0],
-				min:  [...dayData].sort((a, b) => a.temp - b.temp)[0]
+				temp: {
+					// Take the average, max and lowest temperatures.
+					actual: dayData.reduce((total, forecast) => total + forecast.temp.actual, 0) / dayData.length,
+					max:    [...dayData].sort((a, b) => b.temp.actual - a.temp.actual)[0].temp.actual,
+					min:    [...dayData].sort((a, b) => b.temp.actual - a.temp.actual)[0].temp.actual
+				},
+				// Sort the weather data (without modifying it) by the highest icon number to figure out which icon to
+				// use. The numbers appear to increase with severity.
+				weather: [...dayData].sort((a, b) => parseInt(b.weather.icon.substring(0, 2)) -
+				                                     parseInt(a.weather.icon.substring(0, 2)))[0].weather
 			};
+
+			// Add the average to the start of the day.
+			dayCard.appendChild(timeBuild(this.apiDataRebuild(dayAverage), 0));
+			// Loop through the time blocks and add them to the days.
+			dayData.forEach(dayData => dayCard.appendChild(timeBuild(dayData)));
 
 			this.eventClickSave(dayCard, 'dayCard', (event) => {
 				[...event.currentTarget.parentNode.children]
 					.forEach(child => child.classList.toggle('active', event.currentTarget === child));
-
 			});
 
 			return dayCard;
 		};
 
 		// Time block builder function
-		const timeBuild = forecast => {
+		const timeBuild = (forecast, precision = undefined) => {
 			// Clone the time card, and save the querySelector results.
 			const timeCard    = this.templates.timeCard.cloneNode(true).firstElementChild;
 			const humidity    = timeCard.querySelector('.card__item--humidity');
@@ -485,16 +486,20 @@ class Weather {
 			const wind        = timeCard.querySelector('.card__item--wind');
 
 			// Set the icon for the time block.
-			weatherIcon.src = forecast.weather.iconURL;
-			weatherIcon.alt = forecast.weather.description;
+			weatherIcon.src = forecast.weather?.iconURL;
+			weatherIcon.alt = forecast.weather?.description;
 
 			// Set the time (format: 12am), current temperature, humidity, and wind speed/direction.
-			timeCard.querySelector('.card__item--time').textContent = dayjs.unix(forecast.timestamp).format('ha');
+			if (forecast.timestamp)
+				timeCard.querySelector('.card__item--time').textContent = dayjs.unix(forecast.timestamp).format('ha');
 
-			humidity.textContent = forecast.humidity;
-			pressure.textContent = forecast.pressure;
-			temp.textContent     = forecast.getTemp('actual');
-			wind.textContent     = forecast.getWind('both');
+			humidity.textContent = forecast?.humidity;
+			pressure.textContent = forecast?.pressure;
+
+			temp.textContent = forecast.getTemp('actual', precision);
+
+			if (forecast.wind)
+				wind.textContent = forecast.getWind('both');
 
 			// Set the data-label attributes for CSS to fill in. This is mostly for translation purposes.
 			humidity.dataset.label = this.languageText('labels', 'humidity');
@@ -553,17 +558,17 @@ class Weather {
 
 	languagePage() {
 		// Page title
-		document.title                                            = this.languageText('labels', 'title');
-		document.querySelector('.page-header__title').textContent = this.languageText('labels', 'title');
+		document.title                                 = this.languageText('text', 'title');
+		this.elements.pageTitle.textContent            = this.languageText('text', 'title');
+		this.elements.pageFooter.textContent           = this.languageText('text', 'footer');
 		// Form texts
-		this.elements.locationSearchButton.textContent            = this.languageText('labels', 'searchButton');
-		this.elements.locationSearchLabel.textContent             = this.languageText('labels', 'searchLabel');
-		this.elements.locationSearchInput.placeholder             = this.languageText('labels', 'searchInput');
+		this.elements.locationSearchButton.textContent = this.languageText('labels', 'searchButton');
+		this.elements.locationSearchLabel.textContent  = this.languageText('labels', 'searchLabel');
+		this.elements.locationSearchInput.placeholder  = this.languageText('labels', 'searchInput');
 		// Update the data presentation.
 		this.unitMenuBuild();
 
-		// TODO: Find out why you have to click the language twice to load it.
-
+		// Refresh the current location's data.
 		if (this.data.cacheLoaded) this.locationUpdate();
 	}
 
@@ -587,13 +592,18 @@ class Weather {
 		if (language.dayjs) {
 			const scriptElement  = document.createElement('script');
 			scriptElement.src    = language.dayjs;
-			scriptElement.onload = () => dayjs.locale(language.locale);
+			scriptElement.onload = () => {
+				// Set the locale, and refresh the language text on the page.
+				dayjs.locale(language.locale);
+				this.languagePage();
+			};
 			// Add the script element to the DOM.
 			document.body.appendChild(scriptElement);
-
-		} else dayjs.locale(language.locale); // for English
-		// Update the page with the new language selection.
-		this.languagePage();
+		} else {
+			// Set the locale for English, and reload the page text.
+			dayjs.locale(language.locale);
+			this.languagePage();
+		}
 	}
 
 	languageText(key, subKey) {
