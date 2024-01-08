@@ -11,6 +11,12 @@
 	<body>
 		<header class="page-header">
 			<h1 class="page-header__title">Weather Forecast</h1>
+			<!-- Settings -->
+			<section class="settings">
+				<ul class="settings__list settings__list--language"></ul>
+				<ul class="settings__list settings__list--units"></ul>
+			</section>
+
 			<!-- Search Form & History -->
 			<form class="search">
 				<input class="search__input" id="place" name="place" type="text"/>
@@ -20,12 +26,6 @@
 				<ul class="search__list search__list--options"></ul>
 			</form>
 
-			<!-- Settings -->
-			<section class="settings">
-				<ul class="settings__list settings__list--language"></ul>
-				<ul class="settings__list settings__list--units"></ul>
-			</section>
-
 			<!-- Location History -->
 			<ul class="search__list search__list--location"></ul>
 		</header>
@@ -33,6 +33,7 @@
 		<main class="forecast">
 			<section class="weather">
 				<div class="weather__item weather__item--location"></div>
+				<div class="weather__item weather__item--conditions u-hide-empty"></div>
 				<div class="weather__item weather__item--feels-like u-hide-empty"></div>
 				<div class="weather__item weather__item--humidity u-hide-empty"></div>
 				<img class="weather__item weather__item--icon"/>
@@ -41,6 +42,7 @@
 				<div class="weather__item weather__item--pressure u-hide-empty"></div>
 				<div class="weather__item weather__item--temp u-hide-empty"></div>
 				<div class="weather__item weather__item--time u-hide-empty"></div>
+				<div class="weather__item weather__item--time-remote u-hide-empty"></div>
 				<div class="weather__item weather__item--wind u-hide-empty"></div>
 				<div class="weather__item weather__item--visibility u-hide-empty"></div>
 			</section>

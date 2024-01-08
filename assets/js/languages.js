@@ -3,8 +3,9 @@ const languages = {
 		dayjs:       'https://cdn.jsdelivr.net/npm/dayjs@1.11/locale/de.js',
 		description: 'Deutsch',
 		errors:      {
-			coordsInvalid: 'Dies sind keine gültigen Koordinaten.',
-			inputInvalid:  'Dies ist keine gültige Eingabe.'
+			coordsInvalid:   'Dies sind keine gültigen Koordinaten.',
+			currentLocation: 'Dein aktueller Standort konnte nicht ermittelt werden. Versuche es später noch einmal.',
+			inputInvalid:    'Dies ist keine gültige Eingabe.'
 		},
 		icon:        './assets/images/Germany.webp',
 		labels:      {
@@ -33,9 +34,10 @@ const languages = {
 		description: 'English',
 		// Error messages
 		errors: {
-			coordsInvalid: 'These are not valid coordinates',
-			inputInvalid:  'This is not valid input.',
-			networkError:  'Network error'
+			coordsInvalid:   'These are not valid coordinates',
+			currentLocation: 'Impossible de rechercher votre position actuelle. Réessayez plus tard.',
+			inputInvalid:    'This is not valid input.',
+			networkError:    'Network error'
 		},
 		icon:   './assets/images/USA.webp',
 		labels: {
@@ -64,8 +66,9 @@ const languages = {
 		dayjs:       'https://cdn.jsdelivr.net/npm/dayjs@1.11/locale/es.js',
 		description: 'Español',
 		errors:      {
-			coordsInvalid: 'Estas coordenadas no son válidas',
-			inputInvalid:  'Esta entrada no es válida'
+			coordsInvalid:   'Estas coordenadas no son válidas',
+			currentLocation: 'No se ha podido buscar tu ubicación actual. Vuelve a intentarlo más tarde.',
+			inputInvalid:    'Esta entrada no es válida'
 		},
 		icon:        './assets/images/Spain.webp',
 		labels:      {
@@ -94,8 +97,9 @@ const languages = {
 		dayjs:       'https://cdn.jsdelivr.net/npm/dayjs@1.11/locale/fr.js',
 		description: 'Français',
 		errors:      {
-			coordsInvalid: 'Ces coordonnées ne sont pas valides',
-			inputInvalid:  'Cette entrée n\'est pas valide.'
+			coordsInvalid:   'Ces coordonnées ne sont pas valides',
+			currentLocation: 'Impossible de rechercher votre position actuelle. Réessayez plus tard.',
+			inputInvalid:    'Cette entrée n\'est pas valide.'
 		},
 		icon:        './assets/images/France.webp',
 		labels:      {

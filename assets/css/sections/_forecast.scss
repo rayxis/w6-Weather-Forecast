@@ -1,0 +1,90 @@
+@use "../values";
+
+// Forecast Element
+.forecast {
+	display:               grid;
+	grid-template-areas:
+		"weather day2"
+		"weather day3"
+		"weather day4"
+        "day1 day5"
+	    "day1 day6";
+	grid-template-rows:    repeat(5, 150px);
+	grid-template-columns: auto 100px;
+
+	gap:                   values.$padding-medium;
+	padding:               values.$padding-medium;
+}
+
+.weather {
+	grid-column: 1;
+	grid-row:    2 / span 2;
+
+	display:     grid;
+	grid-template-areas:
+		"location location time-remote time"
+		"icon temp feels-like ."
+		"icon max . ."
+		"icon min . .";
+	//grid-template-columns: ;
+
+	&__item {
+		font-family: values.$font-main;
+
+		&--location {
+			grid-area: location;
+			font-size: values.$font-size-xlarge;
+		}
+
+		&--feels-like {
+			grid-area: feels-like;
+		}
+
+		&--humitity {
+			grid-area: humidity;
+		}
+
+		&--icon {
+			grid-area: icon;
+		}
+
+		&--max {
+			grid-area: max;
+		}
+
+		&--min {
+			grid-area: min;
+		}
+
+		&--pressure {
+			grid-area: pressure;
+		}
+
+		&--temp {
+			grid-area: temp;
+			font-size: values.$font-size-large;
+		}
+
+		&--time,
+		&--time-remote {
+			.clock__time {
+				font-size: values.$font-size-large;
+			}
+
+			.clock__date {
+				font-size: values.$font-size-medium;
+			}
+		}
+		&--time {
+			grid-area: time;
+		}
+		&--time-remote {
+			grid-area: time-remote;
+		}
+
+		&--wind {}
+
+		&--visibility {}
+	}
+}
+

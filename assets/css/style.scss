@@ -1,6 +1,7 @@
 @use "values";
 @use 'sections/header';
 @use 'sections/content';
+@use 'sections/forecast';
 
 // Settings
 .settings {
@@ -54,54 +55,9 @@
 	}
 }
 
-.search__option {
-	justify-content: space-between;
-	padding:         values.$padding-small;
-	transition:      transform .25s ease;
-	font-family:     Oswald, sans-serif;
-
-	&:first-of-type {
-		border-radius: values.$border-radius-medium values.$border-radius-medium 0 0;
-	}
-
-	&:last-of-type {
-		border-radius: 0 0 values.$border-radius-medium values.$border-radius-medium;
-	}
-
-	&:hover {
-		background-color: values.$hover-bg-color;
-		transform:        scale(1.02);
-	}
-
-	&-desc {
-		align-self: center;
-		width:      33%;
-
-		&--city {}
-
-		&--stco {
-			font-size: 0.8rem;
-		}
-
-		&--coords {
-			font-size:   0.7rem;
-			font-weight: lighter;
-			text-align:  end;
-		}
-	}
-}
-
 // Location History Item
 .search__item {
-	grid-template-rows: 22px 20px 20px;
-	position:           relative;
-	padding:            values.$padding-small;
-	padding-left:       values.$padding-medium;
-
-	border-radius:      values.$border-radius-large;
-
-	text-shadow:        0 3px 3px values.$hover-shadow;
-	transition:         background-color .25s ease, box-shadow .25s ease, transform .25s ease;
+	//position:           relative;
 
 	&:hover {
 		background-color: values.$hover-bg-color;
@@ -155,30 +111,6 @@
 			text-align: center;
 		}
 	}
-}
-
-.alert {
-
-}
-
-.forecast {
-	display:               grid;
-	grid-template-areas:
-		"weather day2"
-		"weather day3"
-		"weather day4"
-        "day1 day5"
-	    "day1 day6";
-	grid-template-rows:    repeat(5, 150px);
-	grid-template-columns: auto 100px;
-
-	gap:                   values.$padding-medium;
-	padding:               values.$padding-medium;
-}
-
-.weather {
-	grid-column: 1;
-	grid-row:    2 / span 2;
 }
 
 .card {

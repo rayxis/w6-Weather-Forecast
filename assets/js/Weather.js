@@ -3,12 +3,8 @@
 	 - Finish Readme (description and screenshots)
 	 - Finish design (mobile and desktop)
 	 - Click to change day (.active class already toggles).
-     - Weird design bug: when multiple search options pop up, the weather behind clashes.
-	 - On click (or escape key) outside of Options list, close list.
      - Set background color to reflect time of day / weather.
-	 - Check comments
-     - Local time and remote time
-	 - For locationCurrent(), maybe mark the history item as current location with an icon next to the lat/lon, but not actually focus on it on reload.
+	 - Slight delay on remote clock... might need to delete clock when changing locations.
      - Error testing and handling (and messages for the user)
  ***/
 dayjs.extend(window.dayjs_plugin_utc);
@@ -24,10 +20,12 @@ class Weather {
 	};
 	//  Data storage
 	data      = {
-		cacheLoaded:  false,    // Flag for if the page has loaded all the cached data.
-		functions:    {},       // Event handler function storage
-		location:     [],       // Location object storage
-		numberFormat: undefined // Number formatting for different locales.
+		apiKey:          '',       // The API key is filled by the class' constructor.
+		cacheLoaded:     false,    // Flag for if the page has loaded all the cached data.
+		currentLocation: [],       // The user's current location (if there is one).
+		functions:       {},       // Event handler function storage
+		location:        [],       // Location object storage
+		numberFormat:    undefined // Number formatting for different locales.
 	};
 	//  Element references
 	elements  = {
@@ -48,14 +46,14 @@ class Weather {
 	languages = {};
 	//  Regular Expression patterns
 	regex     = {
-		cityStateCountry: /^([A-Za-z.\s'-]+),([A-Za-z.\s'-]+),?([A-Za-z.\s'-]+)?$/,     //  City, State|Country, Country
-		coords:           /^(-?\d{1,2}(?:\.\d{0,7})?)\s*,\s*(-?\d{1,3}(?:\.\d{0,7})?)$/,    //  Lat / Lon pair
-		zipCode:          /^(\d{5}|[A-Za-z]\d[A-Za-z] \d[A-Za-z]\d),?([A-Za-z.\s'-]+)?$/    //  5-digit and Canadian
-	                                                                                        // Zip Codes
+		cityStateCountry: /^([A-Za-z.\s'-]+),([A-Za-z.\s'-]+),?([A-Za-z.\s'-]+)?$/,         //  City, State|Country,
+	                                                                                        // Country
+		coords:  /^(-?\d{1,2}(?:\.\d{0,7})?)\s*,\s*(-?\d{1,3}(?:\.\d{0,7})?)$/,    //  Lat / Lon pair
+		zipCode: /^(\d{5}|[A-Za-z]\d[A-Za-z] \d[A-Za-z]\d),?([A-Za-z.\s'-]+)?$/    //  5-digit and Canadian//
+	                                                                               // Zip Codes
 	};
 	//  Settings
 	settings  = {
-		apiKey:            '',   // Leave blank. The API key is filled by the class' constructor.
 		coordPrecision:    2,    // Decimal Precision for coordinates (.1 = 11.1km, .01 = 1.11km)
 		distancePrecision: 2,    // Distance conversion function precision.
 		cacheForecastExp:  3 * 60 * 60 * 1000, // In milliseconds [3 hours].
@@ -99,19 +97,21 @@ class Weather {
 
 	constructor() {
 		// Load the API key, and languages file.
-		this.settings.apiKey = openWeatherMap.apiKey;
-		this.languages       = languages;
+		this.data.apiKey = openWeatherMap.apiKey;
+		this.languages   = languages;
 
 		// Load the language menu, and site cache. This will set the languages loaded for the site (which will also
 		// load the units menu).
 		this.languageMenuBuild();
 		this.apiCacheLoad('settings');
 		// Look up user's current location.
-		this.locationCurrent();
 
 		// Set the language from settings, or falling back to the browser's detected language, defaulting to English.
 		this.languageSet(this.settings.language || this.languages[navigator.language] || this.languages['en-US']);
-		this.apiCacheLoad('location');
+
+		// Attempt to get the current location, and then load the cache. This is so this.data.currentLocation is
+		// available for testing during the object rebuilds.
+		this.locationCurrent().then(() => this.apiCacheLoad('location'));
 
 		// Clock
 		const clock = this.clockNew();
@@ -125,6 +125,7 @@ class Weather {
 			this.locationLookup(this.elements.locationSearchInput.value);
 		});
 
+		// Set the cacheLoaded flag.
 		this.data.cacheLoaded = true;
 	}
 
@@ -296,7 +297,7 @@ class Weather {
 
 			// Fill in the search parameters.
 			url.search = new URLSearchParams({
-				                                 apiKey: this.settings.apiKey,
+				                                 apiKey: this.data.apiKey,
 				                                 lat:    locationData.latitude,
 				                                 lon:    locationData.longitude
 			                                 });
@@ -408,7 +409,7 @@ class Weather {
 
 		// Save the event handler.
 		element.addEventListener('click', func);
-
+		// Return the function.
 		return func;
 	}
 
@@ -444,7 +445,7 @@ class Weather {
 		// If forecast data doesn't exist, abort.
 		if (!locationData.forecastData) return false;
 
-		// Day builder function.
+		// Day builder function (individual days)
 		const dayBuild = dayData => {
 			// Clone the day card element.
 			const dayCard = this.templates.dayCard.cloneNode(true).firstElementChild;
@@ -473,15 +474,18 @@ class Weather {
 			// Loop through the time blocks and add them to the days.
 			dayData.forEach(dayData => dayCard.appendChild(timeBuild(dayData)));
 
+			// Setup a click event handler for the day cards.
 			this.eventClickSave(dayCard, 'dayCard', (event) => {
+				// Loop through the children, toggle the active class on the clicked card, remove it from the rest.
 				[...event.currentTarget.parentNode.children]
 					.forEach(child => child.classList.toggle('active', event.currentTarget === child));
 			});
 
+			// Return the day card element.
 			return dayCard;
 		};
 
-		// Time block builder function
+		// Time block builder function (segments per day)
 		const timeBuild = (forecast, precision = undefined) => {
 			// Clone the time card, and save the querySelector results.
 			const timeCard    = this.templates.timeCard.cloneNode(true).firstElementChild;
@@ -495,15 +499,15 @@ class Weather {
 			weatherIcon.src = forecast.weather?.iconURL;
 			weatherIcon.alt = forecast.weather?.description;
 
-			// Set the time (format: 12am), current temperature, humidity, and wind speed/direction.
+			// If there is a timestamp, set it. There won't be one for dayAverage.
 			if (forecast.timestamp)
 				timeCard.querySelector('.card__item--time').textContent = dayjs.unix(forecast.timestamp).format('ha');
-
+			// If there is humidity and pressure if those exist as well. Again, not for dayAverage.
 			humidity.textContent = forecast?.humidity;
 			pressure.textContent = forecast?.pressure;
-
-			temp.textContent = forecast.getTemp('actual', precision);
-
+			// Get the temperature, with specified (or default) precision.
+			temp.textContent     = forecast.getTemp('actual', precision);
+			// If there is wind, save the wind. There won't be for dayAverage.
 			if (forecast.wind)
 				wind.textContent = forecast.getWind('both');
 
@@ -513,6 +517,7 @@ class Weather {
 			temp.dataset.label     = this.languageText('labels', 'temp');
 			wind.dataset.label     = this.languageText('labels', 'wind');
 
+			// Return the timeCard element.
 			return timeCard;
 		};
 
@@ -563,7 +568,7 @@ class Weather {
 	}
 
 	languagePage() {
-		// Page title
+		// Page title and footer.
 		document.title                                 = this.languageText('text', 'title');
 		this.elements.pageTitle.textContent            = this.languageText('text', 'title');
 		this.elements.pageFooter.textContent           = this.languageText('text', 'footer');
@@ -628,11 +633,13 @@ class Weather {
 	// Build the location object data for first-time entry into data storage.
 	locationBuild(locationData) {
 		let location;
+
 		// If location data does not include proper coordinates, then abort.
 		if (!locationData.lat || !locationData.lon) return false;
 		// Convert coordinates to a lesser precision.
 		const [latitude, longitude] = this.convertCoords(locationData.lat, locationData.lon);
 
+		// Check if there's an existing location entry in the array.
 		const existingIndex = this.data.location.findIndex(loc => loc.city === locationData.name &&
 		                                                          this.locationDistanceCheck([loc.latitude, loc.longitude],
 		                                                                                     [latitude, longitude])) ?? null;
@@ -666,11 +673,18 @@ class Weather {
 
 	// Gets the user's current location.
 	locationCurrent() {
-		navigator.geolocation.getCurrentPosition(position => {
-			this.locationLookup(`${position.coords.latitude}, ${position.coords.longitude}`);
-		}, error => {
-			console.error(error);
-			this.alertUser('Unable to retrieve your location. Please try again later.');
+		// Because this function is asynchronous, but does not return a promise, create one.
+		return new Promise((pass, fail) => {
+			// Attempt to look up the user's current location. They will need to grant permission for this.
+			navigator.geolocation.getCurrentPosition(position => {
+				this.locationLookup(`${position.coords.latitude}, ${position.coords.longitude}`);
+				// Save the current location so an icon can be set to the current location.
+				this.data.currentLocation = this.convertCoords(position.coords.latitude, position.coords.longitude);
+			}, error => {
+				// If permission was not granted, alert them of the error and log it.
+				console.error('locationCurrent failure:', error);
+				this.alertUser('currentLocation');
+			});
 		});
 	}
 
@@ -698,7 +712,7 @@ class Weather {
 				(locationData.state && locationData.country) ? `${locationData.state}, ${locationData.country}`
 				                                             : locationData.state || locationData.country || '';
 			// Save the index within the location options.
-			locationOption.dataset.index = locationIndex;
+			locationOption.dataset.index                                             = locationIndex;
 
 			// Return the locationOption list item.
 			return locationOption;
@@ -706,10 +720,12 @@ class Weather {
 
 		// Save the function for future removal.
 		this.eventClickSave(document, 'locationListOptions', (event => {
-			// If the event type is a click, and the parent is the location options list.
-			if (event.type === 'click' && event.target.parentNode === locationList) {
+			// Get the list item selection.
+			const locationSelection = event.target.closest('.search__option');
+			// If the event type is a click, and the location was picked:
+			if (event.type === 'click' && locationSelection) {
 				// Rebuild the location object by using the referenced location index, then update the history.
-				this.locationBuild(locationListData[event.target.dataset.index]);
+				this.locationBuild(locationListData[locationSelection.dataset.index]);
 				this.locationListUpdate();
 			}
 			// If the event type is a click, or the Escape key has been pressed clear the list.
@@ -755,6 +771,10 @@ class Weather {
 				locationItem.querySelector('.search__desc--conditions').textContent = location.weatherData.weather.description;
 			}
 
+			console.log(location);
+			if (location.currentLocation)
+				locationItem.classList.add('u-current-location');
+
 			// Save the reference to the direct object, and add an event listener.
 			locationItem.ref = location;
 			location.element = locationItem;
@@ -776,7 +796,7 @@ class Weather {
 		// Initialize variables and get the OpenWeatherMap API key.
 		let cacheTest, locationData, url;
 		let matches   = [];
-		let urlSearch = {appid: this.settings.apiKey};
+		let urlSearch = {appid: this.data.apiKey};
 
 		//  Trim any leading/following whitespace characters.
 		searchData = searchData.trim();
@@ -824,11 +844,7 @@ class Weather {
 				cacheTest = loc => this.locationDistanceCheck([loc.latitude, loc.longitude],
 				                                              [urlSearch.lat, urlSearch.lon]);
 
-			} else {
-				// Alert the user that there's invalid data.
-				this.alertUser('inputInvalid');
-				return false;
-			}
+			} else throw new Error('inputInvalid');
 
 			// Fill the URL string with parameters.
 			url.search = new URLSearchParams(urlSearch);
@@ -859,7 +875,9 @@ class Weather {
 				if (locationData) this.locationBuild(locationData);
 			}));
 		} catch (error) {
-
+			// Alert the user that there's invalid data.
+			this.alertUser(error);
+			return false;
 		}
 	}
 
@@ -878,6 +896,10 @@ class Weather {
 			if (keepLastAccess === false)
 				locationData.lastAccess = Date.now();
 
+			// Test if the current location is within the acceptable distance range for the saved location.
+			// This is for the .u-current-location utility CSS class.
+			locationData.currentLocation = (this.data.currentLocation.length &&
+			                                this.locationDistanceCheck(this.data.currentLocation, [locationData.latitude, locationData.longitude]));
 			// Update the weather, the forecast data and the location list; then cache the data.
 			await this.weatherUpdate(locationData);
 			await this.forecastUpdate(locationData);
@@ -901,6 +923,7 @@ class Weather {
 		this.apiCacheSave('location');
 	}
 
+	// Update the current location. It will be the first one in the array.
 	locationUpdate() {
 		this.data.location[0].select();
 	}
@@ -914,12 +937,14 @@ class Weather {
 		// Shorten the references.
 		const weatherElement = this.elements.weather;
 		const weatherData    = locationData.weatherData;
+		const conditions     = weatherElement.querySelector('.weather__item--conditions');
 		const feelsLike      = weatherElement.querySelector('.weather__item--feels-like');
 		const humidity       = weatherElement.querySelector('.weather__item--humidity');
 		const max            = weatherElement.querySelector('.weather__item--max');
 		const min            = weatherElement.querySelector('.weather__item--min');
 		const pressure       = weatherElement.querySelector('.weather__item--pressure');
 		const temp           = weatherElement.querySelector('.weather__item--temp');
+		const timeRemote     = weatherElement.querySelector('.weather__item--time-remote');
 		const weatherIcon    = weatherElement.querySelector('.weather__item--icon');
 		const wind           = weatherElement.querySelector('.weather__item--wind');
 		const visibility     = weatherElement.querySelector('.weather__item--visibility');
@@ -927,11 +952,17 @@ class Weather {
 		// Set the location name.
 		weatherElement.querySelector('.weather__item--location').textContent = locationData.city;
 
+		// Set the clock for the location.
+		const clock = this.clockNew(weatherData.timezone);
+		clock.classList.add('weather__item', 'weather__item--time-remote');
+		timeRemote.replaceWith(clock);
+
 		// Set the icon for the weather.
 		weatherIcon.src = weatherData.weather.iconURL;
 		weatherIcon.alt = weatherData.weather.description;
 
 		// Set the text content for the weather data.
+		feelsLike.textContent  = weatherData.weather.description;
 		feelsLike.textContent  = weatherData.getTemp('feelsLike');
 		humidity.textContent   = weatherData.humidity ?? '';
 		max.textContent        = weatherData.getTemp('max');
@@ -969,12 +1000,15 @@ class Weather {
 
 	// Alert the user to some sort of issue.
 	alertUser(message) {
-		// Clone the alert
+		// Clone the alert element
 		const alertElement = this.templates.alert.cloneNode(true).firstElementChild;
 
-		alertElement.firstElementChild.textContent = message;
+		// Load the error message from languages.js, and append the message to the page header.
+		// TODO: Fix this function.
+		alertElement.firstElementChild.textContent = this.languageText('errors', message);
 		this.elements.pageHeader.insertBefore(alertElement, this.elements.pageHeader.firstElementChild);
 
+		//  Set the message as active.
 		alertElement.classList.add('active');
 
 		// Save the function for future removal.
@@ -990,7 +1024,7 @@ class Weather {
 	clockNew(tzOffset = undefined, timeFormat = undefined, dateFormat = undefined) {
 		// Clone the clock element and if a timezone offset was specified, use that for dayjs; otherwise keep it local.
 		const clockElement = this.templates.clock.cloneNode(true).firstElementChild;
-		const timeCurrent  = (tzOffset) ? dayjs.utc().utcOffset(tzOffset / 60) : dayjs();
+		const timeCurrent  = (tzOffset) ? dayjs.utc().utcOffset(tzOffset) : dayjs();
 
 		// Set the time and date to their respective elements every second.
 		clockElement.clock = setInterval(() => {

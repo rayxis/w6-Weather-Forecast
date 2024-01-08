@@ -120,7 +120,7 @@ their locations.
 
 * Paul McCaughtry helped with the idea to use a separate array to compare duplicate return cities from the OpenWeatherMap
 API.
-* 
+* Borrowed and refactored event listener code that I made in a previous personal project (VRA Moderation Tool, Think).
 
 ## User Story
 

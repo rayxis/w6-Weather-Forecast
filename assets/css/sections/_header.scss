@@ -2,20 +2,39 @@
 @use "search";
 @use "settings";
 
+
 .page-header {
-	display:               grid;
+	@media (width < values.$media-desktop) {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		gap: values.$padding-medium;
 
-	grid-template-areas:
-		"title search settings"
-		"search-location search-location search-location";
-	grid-template-columns: 250px auto 250px;
-	padding:               values.$padding-medium;
+		.search {flex: 1 0 100%;}
+	}
 
-	font-family:           values.$font-main;
+	padding:     values.$padding-medium;
+	font-family: values.$font-main;
 
 	&__title {
 		grid-area:   title;
 		font-size:   values.$font-size-large;
 		font-weight: lighter;
 	}
+}
+
+@media (width >= values.$media-desktop) {
+	.page-header {
+		display:               grid;
+
+		grid-template-areas:
+			"title search settings"
+			"search-location search-location search-location";
+		grid-template-columns: 250px auto 250px;
+	}
+}
+
+.alert {
+	//padding: values.$padding-medium;
+	//border: values.$border;
 }

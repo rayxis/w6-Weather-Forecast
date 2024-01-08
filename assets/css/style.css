@@ -8,7 +8,13 @@
   grid-area: search;
   display: grid;
   grid-template-areas: "input input button" "label label . " "options options .";
-  transition: transform 0.25s ease;
+  grid-template-columns: auto auto 50px;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+@media (width <= 900px) {
+  .search {
+    flex: 1 0 100%;
+  }
 }
 .search:hover, .search:focus-within {
   transform: scale(1.1);
@@ -16,12 +22,16 @@
 .search__button, .search__input {
   padding: 10px;
   border: none;
-  box-shadow: 0 5px 5px rgba(0, 0, 0, 0.3);
+  box-shadow: inset 0 0 0 rgba(0, 0, 0, 0.3), 0 5px 5px rgba(0, 0, 0, 0.3);
   text-align: center;
+  transition: box-shadow 0.25s ease;
 }
 .search__button {
   grid-area: button;
   border-radius: 0 15px 15px 0;
+}
+.search__button:hover {
+  box-shadow: inset 0 5px 5px rgba(0, 0, 0, 0.3), 0 3px 3px rgba(0, 0, 0, 0.3);
 }
 .search__input {
   grid-area: input;
@@ -63,11 +73,61 @@
 .search__item {
   display: grid;
   grid-template-areas: "city temp icon" "state temp icon" "coordinates conditions conditions";
+  grid-template-rows: 22px 20px 20px;
+  padding: 5px;
+  padding-left: 10px;
+  border-radius: 15px;
+  text-shadow: 0 3px 3px rgba(0, 0, 0, 0.3);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, text-shadow 0.25s ease;
+}
+.search__item .search__desc--city {
+  grid-area: city;
+}
+.search__item .search__desc--conditions {
+  grid-area: conditions;
+}
+.search__item .search__desc--stco {
+  grid-area: stco;
+}
+.search__item .search__desc--coords {
+  grid-area: coords;
+}
+.search__item .search__desc--icon {
+  grid-area: icon;
+  z-index: -1;
+}
+.search__item .search__desc--temp {
+  grid-area: temp;
 }
 
-.search__options {
+.search__option {
   display: flex;
   flex-wrap: nowrap;
+  justify-content: space-between;
+  padding: 5px;
+  transition: transform 0.25s ease;
+}
+.search__option:first-of-type {
+  border-radius: 10px 10px 0 0;
+}
+.search__option:last-of-type {
+  border-radius: 0 0 10px 10px;
+}
+.search__option:hover {
+  background-color: rgba(255, 255, 255, 0.5);
+  transform: scale(1.02);
+}
+.search__option-desc {
+  align-self: center;
+  width: 33.3333333333%;
+}
+.search__option-desc--stco {
+  font-size: 0.7rem;
+}
+.search__option-desc--coords {
+  font-size: 0.6rem;
+  font-weight: lighter;
+  text-align: end;
 }
 
 .settings {
@@ -88,16 +148,35 @@
 }
 
 .page-header {
-  display: grid;
-  grid-template-areas: "title search settings" "search-location search-location search-location";
-  grid-template-columns: 250px auto 250px;
   padding: 10px;
   font-family: Oswald, sans-serif;
+}
+@media (width < 900px) {
+  .page-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .page-header .search {
+    flex: 1 0 100%;
+  }
 }
 .page-header__title {
   grid-area: title;
   font-size: 2rem;
   font-weight: lighter;
+}
+
+@media (width >= 900px) {
+  .page-header {
+    display: grid;
+    grid-template-areas: "title search settings" "search-location search-location search-location";
+    grid-template-columns: 250px auto 250px;
+  }
+}
+html {
+  min-width: 400px;
 }
 
 body {
@@ -123,10 +202,76 @@ body {
   cursor: pointer;
 }
 
+.u-current-location .search__desc--coords::before {
+  content: "";
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  background-image: url("/assets/images/my-location.webp");
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
 .u-hide-empty:empty {
   display: none;
 }
 
+.forecast {
+  display: grid;
+  grid-template-areas: "weather day2" "weather day3" "weather day4" "day1 day5" "day1 day6";
+  grid-template-rows: repeat(5, 150px);
+  grid-template-columns: auto 100px;
+  gap: 10px;
+  padding: 10px;
+}
+
+.weather {
+  grid-column: 1;
+  grid-row: 2/span 2;
+  display: grid;
+  grid-template-areas: "location location time-remote time" "icon temp feels-like ." "icon max . ." "icon min . .";
+}
+.weather__item {
+  font-family: Oswald, sans-serif;
+}
+.weather__item--location {
+  grid-area: location;
+  font-size: 3rem;
+}
+.weather__item--feels-like {
+  grid-area: feels-like;
+}
+.weather__item--humitity {
+  grid-area: humidity;
+}
+.weather__item--icon {
+  grid-area: icon;
+}
+.weather__item--max {
+  grid-area: max;
+}
+.weather__item--min {
+  grid-area: min;
+}
+.weather__item--pressure {
+  grid-area: pressure;
+}
+.weather__item--temp {
+  grid-area: temp;
+  font-size: 2rem;
+}
+.weather__item--time .clock__time, .weather__item--time-remote .clock__time {
+  font-size: 2rem;
+}
+.weather__item--time .clock__date, .weather__item--time-remote .clock__date {
+  font-size: 1rem;
+}
+.weather__item--time {
+  grid-area: time;
+}
+.weather__item--time-remote {
+  grid-area: time-remote;
+}
 .settings__list--language .settings__item {
   border-radius: 50%;
 }
@@ -159,44 +304,6 @@ body {
   box-shadow: 0 5px 5px rgba(0, 0, 0, 0.3);
 }
 
-.search__option {
-  justify-content: space-between;
-  padding: 5px;
-  transition: transform 0.25s ease;
-  font-family: Oswald, sans-serif;
-}
-.search__option:first-of-type {
-  border-radius: 10px 10px 0 0;
-}
-.search__option:last-of-type {
-  border-radius: 0 0 10px 10px;
-}
-.search__option:hover {
-  background-color: rgba(255, 255, 255, 0.5);
-  transform: scale(1.02);
-}
-.search__option-desc {
-  align-self: center;
-  width: 33%;
-}
-.search__option-desc--stco {
-  font-size: 0.8rem;
-}
-.search__option-desc--coords {
-  font-size: 0.7rem;
-  font-weight: lighter;
-  text-align: end;
-}
-
-.search__item {
-  grid-template-rows: 22px 20px 20px;
-  position: relative;
-  padding: 5px;
-  padding-left: 10px;
-  border-radius: 15px;
-  text-shadow: 0 3px 3px rgba(0, 0, 0, 0.3);
-  transition: background-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
-}
 .search__item:hover {
   background-color: rgba(255, 255, 255, 0.5);
   box-shadow: 0 5px 5px rgba(0, 0, 0, 0.3);
@@ -239,20 +346,6 @@ body {
   grid-area: conditions;
   align-self: start;
   text-align: center;
-}
-
-.forecast {
-  display: grid;
-  grid-template-areas: "weather day2" "weather day3" "weather day4" "day1 day5" "day1 day6";
-  grid-template-rows: repeat(5, 150px);
-  grid-template-columns: auto 100px;
-  gap: 10px;
-  padding: 10px;
-}
-
-.weather {
-  grid-column: 1;
-  grid-row: 2/span 2;
 }
 
 .card--day {
