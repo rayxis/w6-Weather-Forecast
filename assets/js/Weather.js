@@ -412,6 +412,11 @@ class Weather {
 		return func;
 	}
 
+	eventFunctionGet(funcName) {
+		// If the function exists, return that; otherwise return false.
+		return (this.data.functions[funcName]) ? this.data.functions[funcName] : false;
+	}
+
 	// Save functions for future reference.
 	eventFunctionSave(funcName, func) {
 		try {
@@ -426,7 +431,8 @@ class Weather {
 		// If the function isn't saved, save it.
 		if (!this.data.functions[funcName]) this.data.functions[funcName] = func;
 
-		return func;
+		// Return the saved function.
+		return this.data.functions[funcName];
 	}
 
 	/***
@@ -679,7 +685,7 @@ class Weather {
 		const locationList = this.elements.locationListOptions;
 
 		// Build each item of the location options list.
-		const listItemBuild = locationData => {
+		const listItemBuild = (locationData, locationIndex) => {
 			const locationOption        = this.templates.locationListOptions.cloneNode(true).firstElementChild;
 			// Convert coordinates to a lesser precision.
 			const [latitude, longitude] = this.convertCoords(locationData.lat, locationData.lon);
@@ -691,24 +697,36 @@ class Weather {
 			locationOption.querySelector('.search__option-desc--stco').textContent   =
 				(locationData.state && locationData.country) ? `${locationData.state}, ${locationData.country}`
 				                                             : locationData.state || locationData.country || '';
+			// Save the index within the location options.
+			locationOption.dataset.index = locationIndex;
 
-			// Save the function for future removal.
-			this.eventClickSave(locationOption, 'locationListOptions', ((locationOption) => {
+			// Return the locationOption list item.
+			return locationOption;
+		};
+
+		// Save the function for future removal.
+		this.eventClickSave(document, 'locationListOptions', (event => {
+			// If the event type is a click, and the parent is the location options list.
+			if (event.type === 'click' && event.target.parentNode === locationList) {
+				// Rebuild the location object by using the referenced location index, then update the history.
+				this.locationBuild(locationListData[event.target.dataset.index]);
+				this.locationListUpdate();
+			}
+			// If the event type is a click, or the Escape key has been pressed clear the list.
+			if (event.type === 'click' || event.type === 'keydown' && event.key === 'Escape') {
 				// Remove event handlers from all the children, and clear the list.
 				[...this.elements.locationListOptions.children].forEach(child => {
 					this.eventClickRemove(child, 'locationListOptions');
 					child.remove();
 				});
+			}
+		}));
 
-				// Rebuild the location object by using the referenced location index, then update the history.
-				this.locationBuild(locationOption);
-				this.locationListUpdate();
-			}).bind(this, locationData));
+		// Add a keypress event listener.
+		document.addEventListener('keydown', this.eventFunctionGet('locationListOptions'));
 
-			return locationOption;
-		};
 		// Loop through the locations, and add them to the list.
-		locationListData.forEach(location => locationList.appendChild(listItemBuild(location)));
+		locationListData.forEach((location, index) => locationList.appendChild(listItemBuild(location, index)));
 	}
 
 	//  Sorts the location list in descending order of most recently accessed location is, and then rebuilds the visual
