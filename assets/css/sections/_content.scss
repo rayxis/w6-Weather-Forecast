@@ -10,10 +10,12 @@ body {
 	font-size:        88%;
 
 	color:            values.$color-text;
+
+	&.theme-night {background-color: values.$color-bg-main-night;}
 }
 
 .page-footer {
-	padding:     values.$padding-small;
+	padding:     values.$size-small;
 	font-family: values.$font-main;
 	font-size:   values.$font-size-small;
 	text-align:  center;

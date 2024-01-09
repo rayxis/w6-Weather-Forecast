@@ -1,6 +1,6 @@
 @use "../values";
 
-// Settings
+// Settings Lists
 .settings {
 	grid-area:   settings;
 	display:     flex;
@@ -9,6 +9,31 @@
 
 	// Items for Language and Measurement Units Lists
 	&__item {
+		margin:        values.$size-xsmall;
+		border-radius: values.$border-radius-large;
+
+		transition:    values.$transition-box-shadow,
+		               values.$transition-text-shadow,
+		               values.$transition-transform;
+
+		// On hover, scale and change shadow
+		&:hover,
+		&.active:hover {
+			transform:   scale(1.5);
+			text-shadow: values.$shadow-medium;
+		}
+
+		// Make the active item bigger
+		&.active {
+			transform:   scale(1.4);
+			text-shadow: values.$shadow-medium;
+		}
+
+		&--language {
+			width:         values.$size-medium-large;
+			border-radius: 50%;
+			box-shadow:    values.$shadow-medium;
+		}
 	}
 
 	// Language and Measurement Units Lists
@@ -25,6 +50,7 @@
 		&--units {
 			font-size:   values.$font-size-small;
 			font-weight: lighter;
+			text-shadow: values.$shadow-small;
 		}
 	}
 }

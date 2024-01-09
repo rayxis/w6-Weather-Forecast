@@ -1,24 +1,220 @@
 @use "../values";
 
-// Forecast Element
-.forecast {
-	display:               grid;
-	grid-template-areas:
-		"weather day2"
-		"weather day3"
-		"weather day4"
-        "day1 day5"
-	    "day1 day6";
-	grid-template-rows:    repeat(5, 150px);
-	grid-template-columns: auto 100px;
+// Cards (Day & Time)
+.card {
+	font-family: values.$font-main;
 
-	gap:                   values.$padding-medium;
-	padding:               values.$padding-medium;
+	// Day Card Header
+	&__header { align-self: flex-start; }
+
+	&__item {
+		&--icon {
+			filter: drop-shadow(values.$shadow-medium);
+		}
+		&--temp {font-size: values.$font-size-large;}
+	}
+	&__item--temp {
+		font-size: values.$font-size-large;
+	}
+
+	// Subtitles within the header
+	&__subtitle {
+		font-weight: normal;
+
+		&--date {font-size: values.$font-size-medium;}
+		&--day {font-size: values.$font-size-small;}
+	}
+
+	// Time Card
+	&--time {
+		list-style: none;
+	}
 }
 
+// Day Cards
+.card--day {
+	display:          flex;
+
+	@media (width < values.$media-desktop) {
+		flex-flow: column nowrap;
+	}
+
+	justify-content:  space-evenly;
+
+	padding:          values.$size-medium;
+	background-color: values.$color-bg-light;
+	border:           values.$border;
+	border-radius:    values.$border-radius-medium;
+	box-shadow:       values.$shadow-medium;
+
+	transition:       values.$transition-bg-color, values.$transition-transform;
+
+	// When screen size is larger than desktop
+	@media (width >= values.$media-desktop) {
+		// The non-active cards.
+		&:not(.active) {
+			grid-column: 2;
+
+			flex-flow:   column nowrap;
+			align-items: center;
+
+			&:hover {
+				background-color: values.$hover-bg-color;
+				transform:        scale(1.1);
+			}
+			@media (width >= values.$media-desktop) {
+				.card--time:not(:first-of-type) {display: none;}
+			}
+
+			.card__item {
+				&--time,
+				&--wind,
+				&--humidity,
+				&--pressure {display: none;}
+
+				&--icon {
+					height: 50px;
+				}
+			}
+		}
+
+		// The active card.
+		&.active {
+			grid-column: 1;
+			grid-row:    4 / span 3;
+
+			flex-flow:   row wrap;
+
+			transition:  none;
+			cursor:      auto;
+
+			// Hide the average.
+			.card--time {
+				display:   flex;
+				flex-flow: column nowrap;
+
+				&:first-of-type {
+					display: none;
+				}
+			}
+
+			.card__header {
+				flex: 1 0 100%;
+			}
+
+			.card__item {
+				&--humidity,
+				&--pressure,
+				&--wind {
+					position:    relative;
+					display:     inline-block;
+					width:       auto;
+
+					font-size:   values.$font-size-small;
+					font-weight: lighter;
+					text-align:  end;
+
+					&::before {
+						content:     attr(data-label);
+						display:     inline-block;
+						position:    absolute;
+						left:        0;
+
+						font-weight: normal;
+						text-align:  start;
+					}
+				}
+				&--temp {
+					font-size: values.$font-size-medium-large;
+				}
+			}
+
+			.card__subtitle {
+				&--date {font-size: values.$font-size-large;}
+				&--day {font-size: values.$font-size-medium;}
+			}
+		}
+	}
+}
+
+// Time Block items when screen size is smaller than desktop
+@media (width < values.$media-desktop) {
+	.card--time {
+		display:               grid;
+		grid-template-columns: values.$size-large values.$size-xlarge repeat(4, 1fr);
+		grid-template-rows: values.$size-xlarge;
+		align-items:           center;
+
+		&:first-of-type {display: none;}
+	}
+	.card__item {
+		display:  inline-block;
+		grid-row: 1;
+
+		&--humidity,
+		&--pressure,
+		&--wind {
+			position:    relative;
+			display:     inline-block;
+			font-weight: lighter;
+
+			&::before {
+				content:     attr(data-label);
+				display:     inline-block;
+
+				font-weight: normal;
+				width:       100%;
+			}
+		}
+
+		&--humidity {
+			grid-column: 5;
+		}
+		&--icon {
+			grid-column: 2;
+			height:      100%;
+			object-fit:  contain;
+		}
+		&--pressure {
+			grid-column: 6;
+		}
+		&--time {
+			grid-column: 1;
+			width:       values.$size-large;
+		}
+		&--temp {
+			grid-column: 3;
+			font-size:   values.$font-size-medium;
+		}
+		&--wind {
+			grid-column: 4;
+		}
+	}
+}
+
+// Forecast Element
+.forecast {
+	// 900x or larger, use a grid.
+	@media (width >= values.$media-desktop) {
+		display:               grid;
+		grid-auto-flow:        column;
+		grid-template-columns: auto 100px;
+		grid-template-rows:    repeat(5, 150px) auto;
+	}
+	// Smaller than 900px, use flexbox
+	@media (width < values.$media-desktop) {
+		display:   flex;
+		flex-flow: column nowrap;
+	}
+
+	gap:     values.$size-medium;
+	padding: values.$size-medium;
+}
+
+// Weather Element
 .weather {
 	grid-column: 1;
-	grid-row:    2 / span 2;
+	grid-row:    1 / span 3;
 
 	display:     grid;
 	grid-template-areas:
@@ -26,7 +222,6 @@
 		"icon temp feels-like ."
 		"icon max . ."
 		"icon min . .";
-	//grid-template-columns: ;
 
 	&__item {
 		font-family: values.$font-main;
@@ -75,9 +270,11 @@
 				font-size: values.$font-size-medium;
 			}
 		}
+
 		&--time {
 			grid-area: time;
 		}
+
 		&--time-remote {
 			grid-area: time-remote;
 		}

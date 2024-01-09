@@ -1,11 +1,11 @@
 /***
  TODO:
-	 - Finish Readme (description and screenshots)
-	 - Finish design (mobile and desktop)
-	 - Click to change day (.active class already toggles).
-     - Set background color to reflect time of day / weather.
-	 - Slight delay on remote clock... might need to delete clock when changing locations.
-     - Error testing and handling (and messages for the user)
+	 - Finish:
+        .weather layout
+	    Fix bugs:
+	        locationCurrent()
+	        Clock Delay (might need to delete clocks when changing locations, or loading screen)?
+	    Readme (description and screenshots)
  ***/
 dayjs.extend(window.dayjs_plugin_utc);
 
@@ -29,6 +29,7 @@ class Weather {
 	};
 	//  Element references
 	elements  = {
+		body:                 document.querySelector('body'),
 		forecastList:         document.querySelector('.forecast'),
 		locationList:         document.querySelector('.search__list--location'),
 		locationListOptions:  document.querySelector('.search__list--options'),
@@ -111,6 +112,10 @@ class Weather {
 
 		// Attempt to get the current location, and then load the cache. This is so this.data.currentLocation is
 		// available for testing during the object rebuilds.
+
+		// TODO: If apiCacheLoad() is in .then(), it deletes every other location. If it's outside, there's no location
+		// check. What if I run it twice? Figure this out.
+		this.apiCacheLoad('location', false);
 		this.locationCurrent().then(() => this.apiCacheLoad('location'));
 
 		// Clock
@@ -167,7 +172,7 @@ class Weather {
 	}
 
 	// Load cached data from localStorage.
-	apiCacheLoad(type) {
+	apiCacheLoad(type, cacheSave = true) {
 		try {
 			switch (type) {
 				case 'location':
@@ -175,9 +180,9 @@ class Weather {
 					// the existing value (there might not be one).
 					this.data.location = JSON.parse(localStorage.getItem(this.settings.cacheLocation)) ?? this.data.location;
 
-					// Loop through the returned array, and rebuild the objects.
-					// Set the second argument (keepLastAccess) to true to keep the order of access.
-					this.data.location.forEach(location => this.locationRebuild(location, true));
+					// Loop through the returned array, and rebuild the objects (if specified). Set the second argument
+					// (keepLastAccess) to true to keep the order of access.
+					this.data.location.forEach(location => this.locationRebuild(location, true, cacheSave));
 					break;
 				case 'settings':
 					this.settings = JSON.parse(localStorage.getItem(this.settings.cacheSettings)) ?? this.settings;
@@ -200,6 +205,8 @@ class Weather {
 			return {
 				humidity:   apiData.main.humidity + '%',
 				pressure:   apiData.main.pressure + ' hPa',
+				sunrise:    apiData.sys.sunrise ?? undefined,
+				sunset:     apiData.sys.sunset ?? undefined,
 				timestamp:  apiData.dt,
 				timezone:   apiData.timezone / 3600 ?? '',
 				temp:       {
@@ -265,7 +272,6 @@ class Weather {
 			//  Fetch data from the specified URL, and then return it.
 			const response = await fetch(url);
 
-			// TODO: Better error handling here.
 			// If the response is not okay, throw an error.
 			if (!response.ok) throw new Error('networkError');
 
@@ -446,7 +452,7 @@ class Weather {
 		if (!locationData.forecastData) return false;
 
 		// Day builder function (individual days)
-		const dayBuild = dayData => {
+		const dayBuild = (dayData, dayIndex) => {
 			// Clone the day card element.
 			const dayCard = this.templates.dayCard.cloneNode(true).firstElementChild;
 			let day       = dayjs(dayData[0].timestamp * 1000);
@@ -454,6 +460,9 @@ class Weather {
 			// Set the text content of the day headers (date and day).
 			dayCard.querySelector('.card__subtitle--date').textContent = day.format('MMMM D');
 			dayCard.querySelector('.card__subtitle--day').textContent  = day.format('dddd');
+
+			// By default, make the first day the active card.
+			if (dayIndex === 0) dayCard.classList.add('active');
 
 			// Build an average
 			const dayAverage = {
@@ -502,6 +511,7 @@ class Weather {
 			// If there is a timestamp, set it. There won't be one for dayAverage.
 			if (forecast.timestamp)
 				timeCard.querySelector('.card__item--time').textContent = dayjs.unix(forecast.timestamp).format('ha');
+
 			// If there is humidity and pressure if those exist as well. Again, not for dayAverage.
 			humidity.textContent = forecast?.humidity;
 			pressure.textContent = forecast?.pressure;
@@ -525,7 +535,7 @@ class Weather {
 		[...this.elements.forecastList.children].splice(1).forEach(child => child.remove());
 		// Loop through the forecast data, create the day elements and add them to the list.
 		Object.values(locationData.forecastData).forEach(
-			day => this.elements.forecastList.appendChild(dayBuild(day)));
+			(day, index) => this.elements.forecastList.appendChild(dayBuild(day, index)));
 	}
 
 	// Updates the forecast from OpenWeatherMap API,
@@ -673,8 +683,11 @@ class Weather {
 
 	// Gets the user's current location.
 	locationCurrent() {
-		// Because this function is asynchronous, but does not return a promise, create one.
-		return new Promise((pass, fail) => {
+		// If the current location is already set, return it.
+		if (this.data.currentLocation.length) return this.data.currentLocation;
+
+		// Otherwise because this function is asynchronous, but does not return a promise, create one.
+		else return new Promise((pass, fail) => {
 			// Attempt to look up the user's current location. They will need to grant permission for this.
 			navigator.geolocation.getCurrentPosition(position => {
 				this.locationLookup(`${position.coords.latitude}, ${position.coords.longitude}`);
@@ -711,8 +724,9 @@ class Weather {
 			locationOption.querySelector('.search__option-desc--stco').textContent   =
 				(locationData.state && locationData.country) ? `${locationData.state}, ${locationData.country}`
 				                                             : locationData.state || locationData.country || '';
+
 			// Save the index within the location options.
-			locationOption.dataset.index                                             = locationIndex;
+			locationOption.dataset.index = locationIndex;
 
 			// Return the locationOption list item.
 			return locationOption;
@@ -771,7 +785,7 @@ class Weather {
 				locationItem.querySelector('.search__desc--conditions').textContent = location.weatherData.weather.description;
 			}
 
-			console.log(location);
+			// If this location is the current location, add the current location class to it.
 			if (location.currentLocation)
 				locationItem.classList.add('u-current-location');
 
@@ -876,14 +890,14 @@ class Weather {
 			}));
 		} catch (error) {
 			// Alert the user that there's invalid data.
-			this.alertUser(error);
+			this.alertUser(error.message);
 			return false;
 		}
 	}
 
 	// Add on the functions and "rebuild" the object for both first-time and subsequent time entries. This is to fix
 	// data that gets destroyed in the caching process, but also avoids repetition of code.
-	async locationRebuild(locationData, keepLastAccess = false) {
+	async locationRebuild(locationData, keepLastAccess = false, cacheSave = true) {
 		// Force the weather data to refresh, by expiring the cache.
 		locationData.refresh = () => {
 			locationData.cacheForecastUntil = Date.now() - 1;
@@ -904,7 +918,10 @@ class Weather {
 			await this.weatherUpdate(locationData);
 			await this.forecastUpdate(locationData);
 			this.locationListUpdate();
-			this.apiCacheSave('location');
+			if (cacheSave) this.apiCacheSave('location');
+
+			// Set the theme based off of sunrise/sunset.
+			this.themeChangeDayNight(locationData);
 		};
 
 		// Run the select() function to update the object and cache the weather data.
@@ -953,9 +970,10 @@ class Weather {
 		weatherElement.querySelector('.weather__item--location').textContent = locationData.city;
 
 		// Set the clock for the location.
-		const clock = this.clockNew(weatherData.timezone);
-		clock.classList.add('weather__item', 'weather__item--time-remote');
-		timeRemote.replaceWith(clock);
+		// TODO: Turn clock back on
+//		const clock = this.clockNew(weatherData.timezone);
+// 		clock.classList.add('weather__item', 'weather__item--time-remote');
+// 		timeRemote.replaceWith(clock);
 
 		// Set the icon for the weather.
 		weatherIcon.src = weatherData.weather.iconURL;
@@ -1005,8 +1023,9 @@ class Weather {
 
 		// Load the error message from languages.js, and append the message to the page header.
 		// TODO: Fix this function.
+		console.log(message);
 		alertElement.firstElementChild.textContent = this.languageText('errors', message);
-		this.elements.pageHeader.insertBefore(alertElement, this.elements.pageHeader.firstElementChild);
+		this.elements.pageHeader.insertBefore(alertElement, this.elements.pageHeader.lastElementChild);
 
 		//  Set the message as active.
 		alertElement.classList.add('active');
@@ -1035,6 +1054,18 @@ class Weather {
 
 		// Return the element node, ready to be appended to the DOM.
 		return clockElement;
+	}
+
+	themeChangeDayNight(locationData) {
+		// Convert the times to a UNIX timestamp using the timezone offset.
+		const timeCurrent = dayjs.utc().utcOffset(locationData.weatherData.timezone).unix();
+		const timeSunrise = dayjs(locationData.weatherData.sunrise).utc().utcOffset(locationData.weatherData.timezone).unix() * 1000;
+		const timeSunset  = dayjs(locationData.weatherData.sunset).utc().utcOffset(locationData.weatherData.timezone).unix() * 1000;
+
+		// If the current time in the location is less than or equal to sunrise, or greater than or equal to sunset,
+		// toggle the night theme.
+		this.elements.body.classList.toggle('theme-night', (timeCurrent <= timeSunrise || timeCurrent >= timeSunset));
+
 	}
 
 	// Build the unit measurement selection menu.

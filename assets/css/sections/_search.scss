@@ -10,23 +10,26 @@
 	}
 
 	grid-template-areas:
-		"input input button"
-		"label label . "
-		"options options .";
-	grid-template-columns: auto auto 50px;
+		".input input button."
+		".label label . ."
+		".options options . .";
+
+	grid-template-columns: auto auto minmax(340px, 500px) values.$size-xlarge auto;
 
 	// Set the transition time for transformations.
 	transition:            values.$transition-transform, values.$transition-box-shadow;
 
 	// On hover, and descendant focus: scale the form.
-	&:hover,
-	&:focus-within {
-		transform: scale(1.1);
+	@media (width >= values.$media-desktop) {
+		&:hover,
+		&:focus-within {
+			transform: scale(1.1);
+		}
 	}
 
 	&__button,
 	&__input {
-		padding:    values.$padding-medium;
+		padding:    values.$size-medium;
 		border:     none;
 
 		box-shadow: inset values.$shadow-none, values.$shadow-medium;
@@ -56,7 +59,7 @@
 	&__label {
 		grid-area:  label;
 
-		padding:    values.$padding-small;
+		padding:    values.$size-small;
 		font-size:  values.$font-size-tiny;
 		font-style: italic;
 		text-align: center;
@@ -82,9 +85,8 @@
 		position:         absolute;
 		top:              -1rem;
 		width:            100%;
-		// TODO: Figure out why this z-index isn't working.
-		padding:          values.$padding-small;
-		z-index:          2;
+
+		padding:          values.$size-small;
 
 		list-style:       none;
 		background-color: values.$color-bg-dark;
@@ -105,40 +107,66 @@
         "coordinates conditions conditions";
 
 	grid-template-rows: 22px 20px 20px;
-	padding:            values.$padding-small;
-	padding-left:       values.$padding-medium;
+	padding:            values.$size-small;
+	padding-left:       values.$size-medium;
 
 	border-radius:      values.$border-radius-large;
 	text-shadow:        values.$shadow-small;
-	transition:         values.$transition-transform,
-	                    values.$transition-box-shadow,
-	                    values.$transition-text-shadow;
+	transition:         values.$transition-box-shadow,
+	                    values.$transition-text-shadow,
+	                    values.$transition-transform;
 
+	&:hover {
+		background-color: values.$hover-bg-color;
+		box-shadow:       values.$shadow-medium;
+		transform:        scale(1.1);
+	}
+
+	// List item fields
 	.search__desc {
 		&--city {
-			grid-area: city;
+			grid-area:    city;
+			font-size:    values.$font-size-medium;
+			font-variant: small-caps;
 		}
 
 		&--conditions {
-			grid-area: conditions;
+			grid-area:  conditions;
+			font-size:  values.$font-size-small;
+			text-align: center;
 		}
 
 		&--stco {
 			grid-area: stco;
+			font-size: values.$font-size-small;
 		}
 
 		&--coords {
-			grid-area: coords;
+			grid-area:   coordinates;
+			font-size:   values.$font-size-small;
+			font-style:  italic;
+			font-weight: lighter;
 		}
 
 		&--icon {
-			grid-area: icon;
-			z-index:   -1; // Fixes jumping through .search_options
+			grid-area:  icon;
+			position:   relative;
+			height:     100%;
+			object-fit: contain;
+			z-index:    -1; // Fixes jumping through .search_options
 
+			filter:     drop-shadow(values.$shadow-small);
+		}
+
+		&--stco {
+			grid-area: state;
 		}
 
 		&--temp {
-			grid-area: temp;
+			grid-area:    temp;
+			padding-left: values.$size-medium;
+
+			font-size:    values.$font-size-large;
 		}
 	}
 }
@@ -148,7 +176,7 @@
 	display:         flex;
 	flex-wrap:       nowrap;
 	justify-content: space-between;
-	padding:         values.$padding-small;
+	padding:         values.$size-small;
 
 	transition:      values.$transition-transform;
 
@@ -157,7 +185,7 @@
 		border-radius: values.$border-radius-medium values.$border-radius-medium 0 0;
 	}
 
-	// Last list item: buttom 2 borders round
+	// Last list item: button 2 borders round
 	&:last-of-type {
 		border-radius: 0 0 values.$border-radius-medium values.$border-radius-medium;
 	}

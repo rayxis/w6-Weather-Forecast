@@ -2,18 +2,17 @@
 @use "search";
 @use "settings";
 
-
 .page-header {
 	@media (width < values.$media-desktop) {
-		display: flex;
-		flex-wrap: wrap;
+		display:         flex;
+		flex-wrap:       wrap;
 		justify-content: space-between;
-		gap: values.$padding-medium;
+		gap:             values.$size-medium;
 
 		.search {flex: 1 0 100%;}
 	}
 
-	padding:     values.$padding-medium;
+	padding:     values.$size-medium;
 	font-family: values.$font-main;
 
 	&__title {
@@ -35,6 +34,19 @@
 }
 
 .alert {
-	//padding: values.$padding-medium;
-	//border: values.$border;
+	padding:          values.$size-medium;
+	width:            100%;
+
+	background-color: values.$color-bg-alert;
+	border:           values.$border;
+	box-shadow:       values.$shadow-medium;
+	cursor:           pointer;
+
+	font-size:        values.$font-size-small;
+	text-align:       center;
+
+	&__footer {
+		font-size:   values.$font-size-tiny;
+		font-weight: lighter;
+	}
 }
