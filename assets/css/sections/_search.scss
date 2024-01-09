@@ -4,6 +4,7 @@
 .search {
 	grid-area:             search;
 	display:               grid;
+	position:              relative;
 
 	@media (width <= values.$media-desktop) {
 		flex: 1 0 100%;
@@ -67,34 +68,43 @@
 
 	&__list,
 	&__list--options {
-		display:   flex;
-		flex-wrap: nowrap;
+		display: flex;
+
+		@media (width >= values.$media-desktop) {
+			flex-wrap: nowrap;
+		}
+		@media (width < values.$media-desktop) {
+			flex-wrap: wrap;
+		}
 	}
 
 	// Location history list
 	&__list {
-		grid-area: search-location;
-	}
-
-	// Multiple-choice location options list
-	&__list--options {
-		grid-area:        options;
-
-		display:          flex;
-		flex-direction:   column;
-		position:         absolute;
-		top:              -1rem;
+		grid-area:        search-location;
 		width:            100%;
 
-		padding:          values.$size-small;
-
-		list-style:       none;
 		background-color: values.$color-bg-dark;
-		border-radius:    values.$border-radius-medium;
-		box-shadow:       values.$shadow-large;
+}
 
-		&:empty {display: none;}
-	}
+// Multiple-choice location options list
+&__list--options {
+	grid-area:        options;
+
+	display:          flex;
+	flex-direction:   column;
+	position:         absolute;
+	top:              -1rem;
+	width:            100%;
+
+	padding:          values.$size-small;
+
+	list-style:       none;
+	background-color: values.$color-bg-dark;
+	border-radius:    values.$border-radius-medium;
+	box-shadow:       values.$shadow-large;
+
+	&:empty {display: none;}
+}
 }
 
 // Location history list item
@@ -109,6 +119,10 @@
 	grid-template-rows: 22px 20px 20px;
 	padding:            values.$size-small;
 	padding-left:       values.$size-medium;
+
+	@media (width < values.$media-desktop) {
+		width: 50%;
+	}
 
 	border-radius:      values.$border-radius-large;
 	text-shadow:        values.$shadow-small;

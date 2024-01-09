@@ -7,6 +7,7 @@
 .search {
   grid-area: search;
   display: grid;
+  position: relative;
   grid-template-areas: ".input input button." ".label label . ." ".options options . .";
   grid-template-columns: auto auto minmax(340px, 500px) 50px auto;
   transition: transform 0.25s ease, box-shadow 0.25s ease;
@@ -49,10 +50,21 @@
 }
 .search__list, .search__list--options {
   display: flex;
-  flex-wrap: nowrap;
+}
+@media (width >= 900px) {
+  .search__list, .search__list--options {
+    flex-wrap: nowrap;
+  }
+}
+@media (width < 900px) {
+  .search__list, .search__list--options {
+    flex-wrap: wrap;
+  }
 }
 .search__list {
   grid-area: search-location;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
 }
 .search__list--options {
   grid-area: options;
@@ -80,6 +92,11 @@
   border-radius: 15px;
   text-shadow: 0 3px 3px rgba(0, 0, 0, 0.3);
   transition: box-shadow 0.25s ease, text-shadow 0.25s ease, transform 0.25s ease;
+}
+@media (width < 900px) {
+  .search__item {
+    width: 50%;
+  }
 }
 .search__item:hover {
   background-color: rgba(255, 255, 255, 0.5);
@@ -220,6 +237,7 @@
 .alert {
   padding: 10px;
   width: 100%;
+  margin: 0 auto;
   background-color: rgba(255, 0, 0, 0.6);
   border: 1px solid rgba(0, 0, 0, 0.2);
   box-shadow: 0 5px 5px rgba(0, 0, 0, 0.3);
@@ -238,10 +256,11 @@ html {
 
 body {
   position: relative;
-  background-color: deepskyblue;
   font-family: sans-serif;
   font-size: 88%;
+  background-color: deepskyblue;
   color: white;
+  transition: background-color 0.25s ease;
 }
 body.theme-night {
   background-color: midnightblue;
@@ -457,10 +476,14 @@ body.theme-night {
   grid-column: 1;
   grid-row: 1/span 3;
   display: grid;
-  grid-template-areas: "location location time-remote time" "icon temp feels-like ." "icon max . ." "icon min . .";
+  grid-template-areas: "location location time-remote ." "icon temp time ." ". max feels-like ." ". min . .";
+  gap: 5px;
 }
 .weather__item {
   font-family: Oswald, sans-serif;
+}
+.weather__item:not(.weather__item--time, .weather__item--time-remote, .weather__item--location, .weather__item--icon) {
+  display: none;
 }
 .weather__item--location {
   grid-area: location;
@@ -488,8 +511,18 @@ body.theme-night {
   grid-area: temp;
   font-size: 2rem;
 }
+.weather__item--time, .weather__item--time-remote {
+  padding: 10px;
+  background-color: rgba(0, 0, 0, 0.6);
+  border-radius: 10px;
+  box-shadow: 0 3px 3px rgba(0, 0, 0, 0.3);
+}
+.weather__item--time::before, .weather__item--time-remote::before {
+  content: attr(data-label);
+}
 .weather__item--time .clock__time, .weather__item--time-remote .clock__time {
   font-size: 2rem;
+  font-variant: small-caps;
 }
 .weather__item--time .clock__date, .weather__item--time-remote .clock__date {
   font-size: 1rem;

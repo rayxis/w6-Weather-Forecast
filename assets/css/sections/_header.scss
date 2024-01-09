@@ -36,6 +36,7 @@
 .alert {
 	padding:          values.$size-medium;
 	width:            100%;
+	margin:           0 auto;
 
 	background-color: values.$color-bg-alert;
 	border:           values.$border;

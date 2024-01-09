@@ -3,6 +3,7 @@
 	 - Finish:
         .weather layout
 	    Fix bugs:
+	        Alert message location
 	        locationCurrent()
 	        Clock Delay (might need to delete clocks when changing locations, or loading screen)?
 	    Readme (description and screenshots)
@@ -119,7 +120,7 @@ class Weather {
 		this.locationCurrent().then(() => this.apiCacheLoad('location'));
 
 		// Clock
-		const clock = this.clockNew();
+		const clock = this.clockNew({label: this.languageText('labels', 'timeLocal')});
 		clock.classList.add('weather__item', 'weather__item--time');
 		this.elements.weather.querySelector('.weather__item--time').replaceWith(clock);
 
@@ -971,9 +972,12 @@ class Weather {
 
 		// Set the clock for the location.
 		// TODO: Turn clock back on
-//		const clock = this.clockNew(weatherData.timezone);
-// 		clock.classList.add('weather__item', 'weather__item--time-remote');
-// 		timeRemote.replaceWith(clock);
+		const clock = this.clockNew({
+			                            timeZone: weatherData.timezone,
+			                            label:    this.languageText('labels', 'timeRemote')
+		                            });
+		clock.classList.add('weather__item', 'weather__item--time-remote');
+		timeRemote.replaceWith(clock);
 
 		// Set the icon for the weather.
 		weatherIcon.src = weatherData.weather.iconURL;
@@ -1040,9 +1044,12 @@ class Weather {
 	}
 
 	// Creates a clock element with the current date and time, offset by an optionally specified timezone.
-	clockNew(tzOffset = undefined, timeFormat = undefined, dateFormat = undefined) {
+	clockNew(clockObject) {
 		// Clone the clock element and if a timezone offset was specified, use that for dayjs; otherwise keep it local.
 		const clockElement = this.templates.clock.cloneNode(true).firstElementChild;
+		const dateFormat   = clockObject?.dateFormat;
+		const timeFormat   = clockObject?.timeFormat;
+		const tzOffset     = clockObject?.timeZone;
 		const timeCurrent  = (tzOffset) ? dayjs.utc().utcOffset(tzOffset) : dayjs();
 
 		// Set the time and date to their respective elements every second.
@@ -1051,6 +1058,9 @@ class Weather {
 			clockElement.querySelector('.clock__time').textContent = timeCurrent.format(timeFormat ?? this.settings.clockTimeFormat);
 			clockElement.querySelector('.clock__date').textContent = timeCurrent.format(dateFormat ?? this.settings.clockDateFormat);
 		}, 1000);
+		
+		// If a label was specified, use that.
+		clockElement.dataset.label = clockObject?.label;
 
 		// Return the element node, ready to be appended to the DOM.
 		return clockElement;

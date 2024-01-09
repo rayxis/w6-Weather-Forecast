@@ -213,19 +213,26 @@
 
 // Weather Element
 .weather {
-	grid-column: 1;
-	grid-row:    1 / span 3;
+	grid-column:  1;
+	grid-row:     1 / span 3;
 
-	display:     grid;
+	display:      grid;
 	grid-template-areas:
-		"location location time-remote time"
-		"icon temp feels-like ."
-		"icon max . ."
-		"icon min . .";
+		"location location time-remote ."
+		"icon temp time ."
+		". max feels-like ."
+		". min . .";
+
+	//grid-template-rows:
+
+	gap:          values.$size-small;
 
 	&__item {
 		font-family: values.$font-main;
 
+		&:not(&--time, &--time-remote, &--location, &--icon) {
+			display: none;
+		}
 		&--location {
 			grid-area: location;
 			font-size: values.$font-size-xlarge;
@@ -262,8 +269,19 @@
 
 		&--time,
 		&--time-remote {
+			padding:          values.$size-medium;
+
+			background-color: values.$color-bg-dark;
+			border-radius:    values.$border-radius-medium;
+			box-shadow:       values.$shadow-small;
+
+			&::before {
+				content: attr(data-label);
+			}
+
 			.clock__time {
-				font-size: values.$font-size-large;
+				font-size:    values.$font-size-large;
+				font-variant: small-caps;
 			}
 
 			.clock__date {
@@ -284,4 +302,3 @@
 		&--visibility {}
 	}
 }
-

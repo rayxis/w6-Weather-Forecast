@@ -5,11 +5,12 @@ html {min-width: 400px;}
 body {
 	position:         relative;
 
-	background-color: values.$color-bg-main-day;
 	font-family:      sans-serif;
 	font-size:        88%;
 
+	background-color: values.$color-bg-main-day;
 	color:            values.$color-text;
+	transition:       values.$transition-bg-color;
 
 	&.theme-night {background-color: values.$color-bg-main-night;}
 }

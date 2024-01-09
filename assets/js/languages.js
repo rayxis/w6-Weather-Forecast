@@ -21,6 +21,8 @@ const languages = {
 			searchInput:  'Einen Ort eingeben',
 			searchLabel:  'Stadt, Staat, Land, Postleitzahl oder Lat/Lon',
 			temp:         'Temp',
+			timeLocal:    'Lokale Zeit',
+			timeRemote:   'Fernzeit',
 			wind:         'Wind',
 			visibility:   'Sichtbarkeit'
 		},
@@ -53,6 +55,8 @@ const languages = {
 			searchInput:  'Enter a location',
 			searchLabel:  'City, State, Country, Zip or Lat/Lon',
 			temp:         'Temp',
+			timeLocal:    'Your Time',
+			timeRemote:   'Local Time',
 			wind:         'Wind',
 			visibility:   'Visibility'
 		},
@@ -84,6 +88,8 @@ const languages = {
 			searchInput:  'Introduzca una ubicación',
 			searchLabel:  'Ciudad, Estado, País, Código Postal o Lat/Lon',
 			temp:         'Temp',
+			timeLocal:    'Hora local',
+			timeRemote:   'Hora remota',
 			wind:         'Viento',
 			visibility:   'Visibilidad'
 		},
@@ -115,6 +121,8 @@ const languages = {
 			searchInput:  'Saisir un lieu',
 			searchLabel:  'Ville, État, Pays, Zip ou Lat/Lon',
 			temp:         'Temp',
+			timeLocal:    'Heure locale',
+			timeRemote:   'Heure à distance',
 			wind:         'Vent',
 			visibility:   'Visibilité'
 		},
