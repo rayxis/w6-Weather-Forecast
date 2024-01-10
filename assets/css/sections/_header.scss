@@ -25,18 +25,23 @@
 @media (width >= values.$media-desktop) {
 	.page-header {
 		display:               grid;
+		gap: values.$size-small;
 
 		grid-template-areas:
 			"title search settings"
-			"search-location search-location search-location";
+			"search-location search-location search-location"
+			". alert .";
 		grid-template-columns: 250px auto 250px;
 	}
 }
 
 .alert {
+	grid-area:        alert;
 	padding:          values.$size-medium;
-	width:            100%;
+	align-self:       center;
 	margin:           0 auto;
+	width:            100%;
+	clear:            both;
 
 	background-color: values.$color-bg-alert;
 	border:           values.$border;

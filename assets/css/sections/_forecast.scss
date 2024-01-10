@@ -213,62 +213,70 @@
 
 // Weather Element
 .weather {
-	grid-column:  1;
-	grid-row:     1 / span 3;
+	grid-column:           1;
+	grid-row:              1 / span 3;
 
-	display:      grid;
+	display:               grid;
 	grid-template-areas:
-		"location location time-remote ."
-		"icon temp time ."
-		". max feels-like ."
-		". min . .";
+		". location location general ."
+		". time . temp ."
+		". time . detail .";
 
-	//grid-template-rows:
+	grid-template-columns: auto auto auto 150px auto;
+	font-family:           values.$font-main;
 
-	gap:          values.$size-small;
+	// Detailed statistics
+	&__detailed-conditions {grid-area: detail;}
 
-	&__item {
-		font-family: values.$font-main;
+	// Icon and description
+	&__general-conditions {
+		grid-area:   general;
+		display:     flex;
+		flex-flow:   column nowrap;
+		align-items: center;
+	}
 
-		&:not(&--time, &--time-remote, &--location, &--icon) {
-			display: none;
+	// Pressure,
+	&__detailed-conditions,
+	&__temperature-information {
+		display:   flex;
+		flex-flow: column nowrap;
+
+		font-size: values.$font-size-medium-small;
+
+		.weather__item {
+			position: relative;
+			display:  inline-block;
+			width:    auto;
+
+			&:not(&--temp) {
+				font-weight: lighter;
+				text-align:  end;
+			}
+
+			&:not(:empty,&--temp)::before {
+				content:     attr(data-label);
+				display:     inline-block;
+				position:    absolute;
+				left:        0;
+
+				font-size:   values.$font-size-small;
+				font-weight: normal;
+			}
 		}
-		&--location {
-			grid-area: location;
-			font-size: values.$font-size-xlarge;
-		}
+	}
 
-		&--feels-like {
-			grid-area: feels-like;
-		}
+	&__location {grid-area: location;}
+	&__temperature-information {grid-area: temp;}
 
-		&--humitity {
-			grid-area: humidity;
-		}
+	&__time-information {
+		grid-area: time;
 
-		&--icon {
-			grid-area: icon;
-		}
+		display:   flex;
+		flex-flow: column;
+		gap:       values.$size-small;
 
-		&--max {
-			grid-area: max;
-		}
-
-		&--min {
-			grid-area: min;
-		}
-
-		&--pressure {
-			grid-area: pressure;
-		}
-
-		&--temp {
-			grid-area: temp;
-			font-size: values.$font-size-large;
-		}
-
-		&--time,
-		&--time-remote {
+		.weather__item {
 			padding:          values.$size-medium;
 
 			background-color: values.$color-bg-dark;
@@ -288,17 +296,17 @@
 				font-size: values.$font-size-medium;
 			}
 		}
+	}
 
-		&--time {
-			grid-area: time;
+	&__item {
+		&--icon {
+			height: 100px;
 		}
-
-		&--time-remote {
-			grid-area: time-remote;
+		&--location {
+			font-size: values.$font-size-xlarge;
 		}
-
-		&--wind {}
-
-		&--visibility {}
+		&--temp {
+			font-size: values.$font-size-xlarge;
+		}
 	}
 }

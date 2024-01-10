@@ -64,7 +64,8 @@
 .search__list {
   grid-area: search-location;
   width: 100%;
-  background-color: rgba(0, 0, 0, 0.6);
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
 }
 .search__list--options {
   grid-area: options;
@@ -230,14 +231,18 @@
 @media (width >= 900px) {
   .page-header {
     display: grid;
-    grid-template-areas: "title search settings" "search-location search-location search-location";
+    gap: 5px;
+    grid-template-areas: "title search settings" "search-location search-location search-location" ". alert .";
     grid-template-columns: 250px auto 250px;
   }
 }
 .alert {
+  grid-area: alert;
   padding: 10px;
-  width: 100%;
+  align-self: center;
   margin: 0 auto;
+  width: 100%;
+  clear: both;
   background-color: rgba(255, 0, 0, 0.6);
   border: 1px solid rgba(0, 0, 0, 0.2);
   box-shadow: 0 5px 5px rgba(0, 0, 0, 0.3);
@@ -476,62 +481,77 @@ body.theme-night {
   grid-column: 1;
   grid-row: 1/span 3;
   display: grid;
-  grid-template-areas: "location location time-remote ." "icon temp time ." ". max feels-like ." ". min . .";
-  gap: 5px;
-}
-.weather__item {
+  grid-template-areas: ". location location general ." ". time . temp ." ". time . detail .";
+  grid-template-columns: auto auto auto 150px auto;
   font-family: Oswald, sans-serif;
 }
-.weather__item:not(.weather__item--time, .weather__item--time-remote, .weather__item--location, .weather__item--icon) {
-  display: none;
+.weather__detailed-conditions {
+  grid-area: detail;
 }
-.weather__item--location {
+.weather__general-conditions {
+  grid-area: general;
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: center;
+}
+.weather__detailed-conditions, .weather__temperature-information {
+  display: flex;
+  flex-flow: column nowrap;
+  font-size: 0.9rem;
+}
+.weather__detailed-conditions .weather__item, .weather__temperature-information .weather__item {
+  position: relative;
+  display: inline-block;
+  width: auto;
+}
+.weather__detailed-conditions .weather__item:not(.weather__detailed-conditions .weather__item--temp, .weather__temperature-information .weather__item--temp), .weather__temperature-information .weather__item:not(.weather__detailed-conditions .weather__item--temp, .weather__temperature-information .weather__item--temp) {
+  font-weight: lighter;
+  text-align: end;
+}
+.weather__detailed-conditions .weather__item:not(:empty, .weather__detailed-conditions .weather__item--temp, .weather__temperature-information .weather__item--temp)::before, .weather__temperature-information .weather__item:not(:empty, .weather__detailed-conditions .weather__item--temp, .weather__temperature-information .weather__item--temp)::before {
+  content: attr(data-label);
+  display: inline-block;
+  position: absolute;
+  left: 0;
+  font-size: 0.7rem;
+  font-weight: normal;
+}
+.weather__location {
   grid-area: location;
-  font-size: 3rem;
 }
-.weather__item--feels-like {
-  grid-area: feels-like;
-}
-.weather__item--humitity {
-  grid-area: humidity;
-}
-.weather__item--icon {
-  grid-area: icon;
-}
-.weather__item--max {
-  grid-area: max;
-}
-.weather__item--min {
-  grid-area: min;
-}
-.weather__item--pressure {
-  grid-area: pressure;
-}
-.weather__item--temp {
+.weather__temperature-information {
   grid-area: temp;
-  font-size: 2rem;
 }
-.weather__item--time, .weather__item--time-remote {
+.weather__time-information {
+  grid-area: time;
+  display: flex;
+  flex-flow: column;
+  gap: 5px;
+}
+.weather__time-information .weather__item {
   padding: 10px;
   background-color: rgba(0, 0, 0, 0.6);
   border-radius: 10px;
   box-shadow: 0 3px 3px rgba(0, 0, 0, 0.3);
 }
-.weather__item--time::before, .weather__item--time-remote::before {
+.weather__time-information .weather__item::before {
   content: attr(data-label);
 }
-.weather__item--time .clock__time, .weather__item--time-remote .clock__time {
+.weather__time-information .weather__item .clock__time {
   font-size: 2rem;
   font-variant: small-caps;
 }
-.weather__item--time .clock__date, .weather__item--time-remote .clock__date {
+.weather__time-information .weather__item .clock__date {
   font-size: 1rem;
 }
-.weather__item--time {
-  grid-area: time;
+.weather__item--icon {
+  height: 100px;
 }
-.weather__item--time-remote {
-  grid-area: time-remote;
+.weather__item--location {
+  font-size: 3rem;
+}
+.weather__item--temp {
+  font-size: 3rem;
 }
 
 /*# sourceMappingURL=style.css.map */

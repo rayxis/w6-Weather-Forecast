@@ -1,12 +1,10 @@
 /***
  TODO:
-	 - Finish:
-        .weather layout
-	    Fix bugs:
-	        Alert message location
-	        locationCurrent()
-	        Clock Delay (might need to delete clocks when changing locations, or loading screen)?
 	    Readme (description and screenshots)
+        Fix bugs:
+	        locationCurrent()
+	        Clock Delay?
+            Locations randomly change now?
  ***/
 dayjs.extend(window.dayjs_plugin_utc);
 
@@ -30,7 +28,6 @@ class Weather {
 	};
 	//  Element references
 	elements  = {
-		body:                 document.querySelector('body'),
 		forecastList:         document.querySelector('.forecast'),
 		locationList:         document.querySelector('.search__list--location'),
 		locationListOptions:  document.querySelector('.search__list--options'),
@@ -971,7 +968,6 @@ class Weather {
 		weatherElement.querySelector('.weather__item--location').textContent = locationData.city;
 
 		// Set the clock for the location.
-		// TODO: Turn clock back on
 		const clock = this.clockNew({
 			                            timeZone: weatherData.timezone,
 			                            label:    this.languageText('labels', 'timeRemote')
@@ -984,7 +980,7 @@ class Weather {
 		weatherIcon.alt = weatherData.weather.description;
 
 		// Set the text content for the weather data.
-		feelsLike.textContent  = weatherData.weather.description;
+		conditions.textContent = weatherData.weather.description;
 		feelsLike.textContent  = weatherData.getTemp('feelsLike');
 		humidity.textContent   = weatherData.humidity ?? '';
 		max.textContent        = weatherData.getTemp('max');
@@ -1026,8 +1022,6 @@ class Weather {
 		const alertElement = this.templates.alert.cloneNode(true).firstElementChild;
 
 		// Load the error message from languages.js, and append the message to the page header.
-		// TODO: Fix this function.
-		console.log(message);
 		alertElement.firstElementChild.textContent = this.languageText('errors', message);
 		this.elements.pageHeader.insertBefore(alertElement, this.elements.pageHeader.lastElementChild);
 
@@ -1058,7 +1052,7 @@ class Weather {
 			clockElement.querySelector('.clock__time').textContent = timeCurrent.format(timeFormat ?? this.settings.clockTimeFormat);
 			clockElement.querySelector('.clock__date').textContent = timeCurrent.format(dateFormat ?? this.settings.clockDateFormat);
 		}, 1000);
-		
+
 		// If a label was specified, use that.
 		clockElement.dataset.label = clockObject?.label;
 
