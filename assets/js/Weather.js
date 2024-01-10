@@ -1,10 +1,7 @@
 /***
  TODO:
 	    Readme (description and screenshots)
-        Fix bugs:
-	        locationCurrent()
-	        Clock Delay?
-            Locations randomly change now?
+	    Limit history, or delete items
  ***/
 dayjs.extend(window.dayjs_plugin_utc);
 
@@ -28,6 +25,7 @@ class Weather {
 	};
 	//  Element references
 	elements  = {
+		body:                 document.querySelector('body'),
 		forecastList:         document.querySelector('.forecast'),
 		locationList:         document.querySelector('.search__list--location'),
 		locationListOptions:  document.querySelector('.search__list--options'),
@@ -62,6 +60,7 @@ class Weather {
 		clockDateFormat:   'D MMMM YYYY',      // Clock Date Format
 		clockTimeFormat:   'h:mm a',           // Clock Time Format
 		geoLimit:          5,    // Maximum location options from OpenWeatherMaps is 5.
+		gpsMaxAge:         15 * 60 * 1000,     // Maximum GPS cache time (in milliseconds) [15 min]
 		language:          undefined,
 		iconURL:           'https://openweathermap.org/img/wn/', // URL for OpenWeather's icons.
 		similarPrecision:  .1,   // Difference in distance for two places with the names to be considered the same
@@ -113,7 +112,7 @@ class Weather {
 
 		// TODO: If apiCacheLoad() is in .then(), it deletes every other location. If it's outside, there's no location
 		// check. What if I run it twice? Figure this out.
-		this.apiCacheLoad('location', false);
+		this.apiCacheLoad('location', true);
 		this.locationCurrent().then(() => this.apiCacheLoad('location'));
 
 		// Clock
@@ -695,7 +694,9 @@ class Weather {
 				// If permission was not granted, alert them of the error and log it.
 				console.error('locationCurrent failure:', error);
 				this.alertUser('currentLocation');
-			});
+			}, {
+				                                         maximumAge: this.settings.gpsMaxAge
+			                                         });
 		});
 	}
 
@@ -783,8 +784,10 @@ class Weather {
 				locationItem.querySelector('.search__desc--conditions').textContent = location.weatherData.weather.description;
 			}
 
+			// Test if the current location is within the acceptable distance range for the saved location.
 			// If this location is the current location, add the current location class to it.
-			if (location.currentLocation)
+			if (this.data.currentLocation.length
+			    && this.locationDistanceCheck(this.data.currentLocation, [location.latitude, location.longitude]))
 				locationItem.classList.add('u-current-location');
 
 			// Save the reference to the direct object, and add an event listener.
@@ -908,10 +911,6 @@ class Weather {
 			if (keepLastAccess === false)
 				locationData.lastAccess = Date.now();
 
-			// Test if the current location is within the acceptable distance range for the saved location.
-			// This is for the .u-current-location utility CSS class.
-			locationData.currentLocation = (this.data.currentLocation.length &&
-			                                this.locationDistanceCheck(this.data.currentLocation, [locationData.latitude, locationData.longitude]));
 			// Update the weather, the forecast data and the location list; then cache the data.
 			await this.weatherUpdate(locationData);
 			await this.forecastUpdate(locationData);
@@ -952,21 +951,28 @@ class Weather {
 		// Shorten the references.
 		const weatherElement = this.elements.weather;
 		const weatherData    = locationData.weatherData;
+		const city           = weatherElement.querySelector('.weather__item--city');
 		const conditions     = weatherElement.querySelector('.weather__item--conditions');
+		const coords         = weatherElement.querySelector('.weather__item--coords');
 		const feelsLike      = weatherElement.querySelector('.weather__item--feels-like');
 		const humidity       = weatherElement.querySelector('.weather__item--humidity');
 		const max            = weatherElement.querySelector('.weather__item--max');
 		const min            = weatherElement.querySelector('.weather__item--min');
 		const pressure       = weatherElement.querySelector('.weather__item--pressure');
+		const stco           = weatherElement.querySelector('.weather__item--stco');
 		const temp           = weatherElement.querySelector('.weather__item--temp');
+		const timeLocal      = weatherElement.querySelector('.weather__item--time');
 		const timeRemote     = weatherElement.querySelector('.weather__item--time-remote');
 		const weatherIcon    = weatherElement.querySelector('.weather__item--icon');
 		const wind           = weatherElement.querySelector('.weather__item--wind');
 		const visibility     = weatherElement.querySelector('.weather__item--visibility');
 
 		// Set the location name.
-		weatherElement.querySelector('.weather__item--location').textContent = locationData.city;
+		city.textContent   = locationData.city;
+		coords.textContent = `${locationData.latitude}, ${locationData.longitude}`;
+		stco.textContent   = `${locationData.state}, ${locationData.country}`;
 
+		if (timeRemote.clock) this.clockStop(timeRemote);
 		// Set the clock for the location.
 		const clock = this.clockNew({
 			                            timeZone: weatherData.timezone,
@@ -997,6 +1003,7 @@ class Weather {
 		min.dataset.label        = this.languageText('labels', 'min');
 		pressure.dataset.label   = this.languageText('labels', 'pressure');
 		temp.dataset.label       = this.languageText('labels', 'temp');
+		timeLocal.dataset.label  = this.languageText('labels', 'timeLocal');
 		wind.dataset.label       = this.languageText('labels', 'wind');
 		visibility.dataset.label = this.languageText('labels', 'visibility');
 	}
@@ -1058,6 +1065,10 @@ class Weather {
 
 		// Return the element node, ready to be appended to the DOM.
 		return clockElement;
+	}
+
+	clockStop(clockElement) {
+		clearInterval(clockElement.clock);
 	}
 
 	themeChangeDayNight(locationData) {
