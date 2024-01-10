@@ -3,14 +3,17 @@
 	<head>
 		<meta charset="UTF-8">
 		<meta content='width=device-width, initial-scale=1' name='viewport'/>
-		<title>Weather Forecast</title>
+		<title></title>
 
 		<link rel="stylesheet" href="./assets/css/style.css"/>
 	</head>
 
 	<body>
+		<!-- Page Header -->
 		<header class="page-header">
-			<h1 class="page-header__title">Weather Forecast</h1>
+			<!-- Page Heading Title -->
+			<h1 class="page-header__title"></h1>
+
 			<!-- Settings -->
 			<section class="settings">
 				<ul class="settings__list settings__list--language"></ul>
@@ -32,29 +35,38 @@
 
 		<main class="forecast">
 			<section class="weather">
-				<section class="weather__location">
+				<!-- Forecast Header: Location -->
+				<header class="weather__location">
 					<div class="weather__location-container">
 						<div class="weather__item weather__item--city"></div>
 						<div class="weather__item weather__item--stco"></div>
 						<div class="weather__item weather__item--coords"></div>
 					</div>
-				</section>
+				</header>
+
+				<!-- Temperature Information -->
 				<section class="weather__temperature-information">
 					<div class="weather__item weather__item--temp u-hide-empty"></div>
 					<div class="weather__item weather__item--feels-like u-hide-empty"></div>
 					<div class="weather__item weather__item--max u-hide-empty"></div>
 					<div class="weather__item weather__item--min u-hide-empty"></div>
 				</section>
+
+				<!-- General Conditions: Icon and Description -->
 				<figure class="weather__general-conditions">
 					<img class="weather__item weather__item--icon"/>
 					<figcaption class="weather__item weather__item--conditions u-hide-empty"></figcaption>
 				</figure>
+
+				<!-- Detailed Conditions: Humidity, Pressure, Visibility, and Wind -->
 				<section class="weather__detailed-conditions">
 					<div class="weather__item weather__item--humidity u-hide-empty"></div>
 					<div class="weather__item weather__item--wind u-hide-empty"></div>
 					<div class="weather__item weather__item--pressure u-hide-empty"></div>
 					<div class="weather__item weather__item--visibility u-hide-empty"></div>
 				</section>
+
+				<!-- Time Information: Clocks -->
 				<section class="weather__time-information">
 					<div class="weather__item weather__item--time u-hide-empty"></div>
 					<div class="weather__item weather__item--time-remote u-hide-empty"></div>
@@ -62,6 +74,7 @@
 			</section>
 		</main>
 
+		<!-- Page Footer -->
 		<footer class="page-footer"></footer>
 
 		<!-- Template: Alert -->

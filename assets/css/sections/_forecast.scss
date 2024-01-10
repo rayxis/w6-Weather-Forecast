@@ -7,22 +7,19 @@
 	// Day Card Header
 	&__header { align-self: flex-start; }
 
+	// Temperature and icon elements
 	&__item {
-		&--icon {
-			filter: drop-shadow(values.$shadow-medium);
-		}
-		&--temp {font-size: values.$font-size-large;}
-	}
-	&__item--temp {
-		font-size: values.$font-size-large;
+		&--icon { filter: drop-shadow(values.$shadow-medium); }
+		&--temp { font-size: values.$font-size-large; }
 	}
 
-	// Subtitles within the header
+	// Day title headings
 	&__subtitle {
 		font-weight: normal;
 
-		&--date {font-size: values.$font-size-medium;}
-		&--day {font-size: values.$font-size-small;}
+		// Date and day
+		&--date { font-size: values.$font-size-medium; }
+		&--day { font-size: values.$font-size-small; }
 	}
 
 	// Time Card
@@ -35,9 +32,8 @@
 .card--day {
 	display:          flex;
 
-	@media (width < values.$media-desktop) {
-		flex-flow: column nowrap;
-	}
+	// Mobile screen size
+	@media (width < values.$media-desktop) { flex-flow: column nowrap; }
 
 	justify-content:  space-evenly;
 
@@ -62,15 +58,18 @@
 				background-color: values.$color-bg-hover;
 				transform:        scale(1.1);
 			}
+			// Desktop screen size
 			@media (width >= values.$media-desktop) {
-				.card--time:not(:first-of-type) {display: none;}
+				// Hide all the forecast information except the average information (first array item of each day).
+				.card--time:not(:first-of-type) { display: none; }
 			}
 
+			// Hide everything except the date information and icon
 			.card__item {
-				&--time,
-				&--wind,
 				&--humidity,
-				&--pressure {display: none;}
+				&--pressure,
+				&--time,
+				&--wind { display: none; }
 
 				&--icon {
 					height: 50px;
@@ -93,15 +92,13 @@
 				display:   flex;
 				flex-flow: column nowrap;
 
-				&:first-of-type {
-					display: none;
-				}
+				&:first-of-type { display: none; }
 			}
 
-			.card__header {
-				flex: 1 0 100%;
-			}
+			// Keep the card header at maximum length
+			.card__header { flex: 1 0 100%; }
 
+			// Elements within the active card
 			.card__item {
 				&--humidity,
 				&--pressure,
@@ -114,6 +111,7 @@
 					font-weight: lighter;
 					text-align:  end;
 
+					// Add a label to humidity, pressure, and wind
 					&::before {
 						content:     attr(data-label);
 						display:     inline-block;
@@ -124,14 +122,15 @@
 						text-align:  start;
 					}
 				}
-				&--temp {
-					font-size: values.$font-size-medium-large;
-				}
+				// Temperature
+				&--temp { font-size: values.$font-size-medium-large; }
 			}
 
+			// Title heading to the day card
 			.card__subtitle {
-				&--date {font-size: values.$font-size-large;}
-				&--day {font-size: values.$font-size-medium;}
+				// Date and day
+				&--date { font-size: values.$font-size-large; }
+				&--day { font-size: values.$font-size-medium; }
 			}
 		}
 	}
@@ -139,18 +138,22 @@
 
 // Time Block items when screen size is smaller than desktop
 @media (width < values.$media-desktop) {
+	// Time blocks
 	.card--time {
 		display:               grid;
 		grid-template-columns: values.$size-large values.$size-xlarge repeat(4, 1fr);
-		grid-template-rows: values.$size-xlarge;
+		grid-template-rows:    values.$size-xlarge;
 		align-items:           center;
 
-		&:first-of-type {display: none;}
+		// Don't show the first one (averages)
+		&:first-of-type { display: none; }
 	}
+	// Each element within the time blocks
 	.card__item {
 		display:  inline-block;
 		grid-row: 1;
 
+		// Humidity, pressure, wind
 		&--humidity,
 		&--pressure,
 		&--wind {
@@ -158,6 +161,7 @@
 			display:     inline-block;
 			font-weight: lighter;
 
+			// Add a label to humidity, pressure, and wind
 			&::before {
 				content:     attr(data-label);
 				display:     inline-block;
@@ -167,41 +171,45 @@
 			}
 		}
 
-		&--humidity {
-			grid-column: 5;
-		}
+		// Humidity
+		&--humidity { grid-column: 5; }
+
+		// Icon
 		&--icon {
 			grid-column: 2;
 			height:      100%;
 			object-fit:  contain;
 		}
-		&--pressure {
-			grid-column: 6;
-		}
+		// Pressure
+		&--pressure { grid-column: 6; }
+
+		// Time
 		&--time {
 			grid-column: 1;
 			width:       values.$size-large;
 		}
+
+		// Temperature
 		&--temp {
 			grid-column: 3;
 			font-size:   values.$font-size-medium;
 		}
-		&--wind {
-			grid-column: 4;
-		}
+
+		// Wind
+		&--wind { grid-column: 4; }
 	}
 }
 
 // Forecast Element
 .forecast {
-	// 900x or larger, use a grid.
+	// Desktop screen size, use a grid
 	@media (width >= values.$media-desktop) {
 		display:               grid;
 		grid-auto-flow:        column;
 		grid-template-columns: auto 100px;
 		grid-template-rows:    repeat(5, 150px) auto;
 	}
-	// Smaller than 900px, use flexbox
+	// Mobile screen size, use a flexbox
 	@media (width < values.$media-desktop) {
 		display:   flex;
 		flex-flow: column nowrap;
@@ -236,7 +244,7 @@
 		align-items: center;
 	}
 
-	// Pressure,
+	// Humidity, Pressure, Wind, Visibility
 	&__detailed-conditions,
 	&__temperature-information {
 		display:   flex;
@@ -244,16 +252,19 @@
 
 		font-size: values.$font-size-medium-small;
 
+		// Each element
 		.weather__item {
 			position: relative;
 			display:  inline-block;
 			width:    auto;
 
+			// Everything except the temperature
 			&:not(&--temp) {
 				font-weight: lighter;
 				text-align:  end;
 			}
 
+			// Add labels to everything except empty elements and the temperature
 			&:not(:empty,&--temp)::before {
 				content:     attr(data-label);
 				display:     inline-block;
@@ -266,33 +277,35 @@
 		}
 	}
 
+	// Location Header
 	&__location {
 		grid-area: location;
 		display:   flex;
 
+		// Location Container
 		&-container {
 			display:   flex;
 			flex-flow: column nowrap;
 			width:     auto;
 			height:    100%;
 
-			@media (width >= values.$media-desktop) {
-				justify-content: flex-start;
-			}
-			@media (width < values.$media-desktop) {
-				justify-content: space-between;
-			}
+			// Desktop screen size
+			@media (width >= values.$media-desktop) { justify-content: flex-start; }
+			// Mobile screen size
+			@media (width < values.$media-desktop) { justify-content: space-between; }
 		}
 
+		// Location elements
 		.weather__item {
-			&--city {
-				font-size: values.$font-size-xlarge;
-			}
+			// City
+			&--city { font-size: values.$font-size-xlarge; }
+			// State, Country
 			&--stco {
 				font-size:      values.$font-size-medium;
 				text-align:     end;
 				text-transform: uppercase;
 			}
+			// Coordinates
 			&--coords {
 				font-size:   values.$font-size-small;
 				font-weight: lighter;
@@ -300,8 +313,11 @@
 			}
 		}
 	}
+
+	// Temperature Information
 	&__temperature-information {grid-area: temp;}
 
+	// Container: Time information
 	&__time-information {
 		grid-area: time;
 
@@ -309,6 +325,7 @@
 		flex-flow: column;
 		gap:       values.$size-small;
 
+		// Clock
 		.weather__item {
 			padding:          values.$size-medium;
 
@@ -316,29 +333,21 @@
 			border-radius:    values.$border-radius-medium;
 			box-shadow:       values.$shadow-small;
 
-			&::before {
-				content: attr(data-label);
-			}
+			// Label Content
+			&::before { content: attr(data-label); }
 
+			// Clock Time
 			.clock__time {
 				font-size:    values.$font-size-large;
 				font-variant: small-caps;
 			}
-
-			.clock__date {
-				font-size: values.$font-size-medium;
-			}
+			// Clock Date
+			.clock__date { font-size: values.$font-size-medium; }
 		}
 	}
 
 	&__item {
-		&--icon {
-			height: 100px;
-		}
-		&--location {
-		}
-		&--temp {
-			font-size: values.$font-size-xlarge;
-		}
+		&--icon { height: 100px; }
+		&--temp { font-size: values.$font-size-xlarge; }
 	}
 }

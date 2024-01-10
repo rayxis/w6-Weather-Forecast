@@ -28,8 +28,9 @@ const languages = {
 		},
 		locale:      'de-DE',
 		text:        {
-			footer: 'Die Seite wurde von Ray Beliveau programmiert und gestaltet.',
-			title:  'Wettervorhersage'
+			alertClose: '(Zum Schließen klicken)',
+			footer:     'Die Seite wurde von Ray Beliveau programmiert und gestaltet.',
+			title:      'Wettervorhersage'
 		}
 	},
 	'en-US': {
@@ -62,8 +63,9 @@ const languages = {
 		},
 		locale: 'en-US',
 		text:   {
-			footer: 'Page coded and designed by Ray Beliveau.',
-			title:  'Weather Forecast'
+			alertClose: '(click to close)',
+			footer:     'Page coded and designed by Ray Beliveau.',
+			title:      'Weather Forecast'
 		}
 	},
 	'es-ES': {
@@ -76,6 +78,7 @@ const languages = {
 		},
 		icon:        './assets/images/Spain.webp',
 		labels:      {
+			alertClose:   '(click to close)',
 			feelsLike:    'Se siente como',
 			humidity:     'Humedad',
 			imperial:     'Imperial',
@@ -95,8 +98,9 @@ const languages = {
 		},
 		locale:      'es-ES',
 		text:        {
-			footer: 'Página codificada y diseñada por Ray Beliveau.',
-			title:  'Pronóstico del Tiempo'
+			alertClose: '(pulsa para cerrar)',
+			footer:     'Página codificada y diseñada por Ray Beliveau.',
+			title:      'Pronóstico del Tiempo'
 		}
 	},
 	'fr-FR': {
@@ -128,8 +132,9 @@ const languages = {
 		},
 		locale:      'fr-FR',
 		text:        {
-			footer: 'Page codée et dessinée par Ray Beliveau.',
-			title:  'Prévisions Météorologiques'
+			alertClose: '(cliquer pour fermer)',
+			footer:     'Page codée et dessinée par Ray Beliveau.',
+			title:      'Prévisions Météorologiques'
 		}
 	}
 };

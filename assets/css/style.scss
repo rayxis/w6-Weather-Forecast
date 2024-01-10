@@ -1,4 +1,4 @@
-@use "values";
-@use 'sections/header';
-@use 'sections/content';
-@use 'sections/forecast';
+@use "values";              // Predefined values and settings
+@use 'sections/header';     // Page Header
+@use 'sections/content';    // Content
+@use 'sections/forecast';   // Forecast and Weather

@@ -1031,6 +1031,7 @@ class Weather {
 
 		// Load the error message from languages.js, and append the message to the page header.
 		alertElement.firstElementChild.textContent = this.languageText('errors', message);
+		alertElement.lastElementChild.textContent = this.languageText('text', 'alertClose');
 		this.elements.pageHeader.insertBefore(alertElement, this.elements.pageHeader.lastElementChild);
 
 		//  Set the message as active.

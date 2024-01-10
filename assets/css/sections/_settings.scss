@@ -30,6 +30,7 @@
 			text-shadow: values.$shadow-medium;
 		}
 
+		// Make the language icon container circular with a shadow
 		&--language {
 			width:         values.$size-medium-large;
 			border-radius: 50%;

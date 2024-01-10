@@ -115,10 +115,6 @@
   font-size: 0.7rem;
   text-align: center;
 }
-.search__item .search__desc--stco {
-  grid-area: stco;
-  font-size: 0.7rem;
-}
 .search__item .search__desc--coords {
   grid-area: coordinates;
   font-size: 0.7rem;
@@ -134,6 +130,7 @@
 }
 .search__item .search__desc--stco {
   grid-area: state;
+  font-size: 0.7rem;
 }
 .search__item .search__desc--temp {
   grid-area: temp;
@@ -161,6 +158,9 @@
 .search__option-desc {
   align-self: center;
   width: 33.3333333333%;
+}
+.search__option-desc--city {
+  font-size: 0.9rem;
 }
 .search__option-desc--stco {
   font-size: 0.7rem;
@@ -223,12 +223,6 @@
     flex: 1 0 100%;
   }
 }
-.page-header__title {
-  grid-area: title;
-  font-size: 2rem;
-  font-weight: lighter;
-}
-
 @media (width >= 900px) {
   .page-header {
     display: grid;
@@ -237,6 +231,12 @@
     grid-template-columns: 250px auto 250px;
   }
 }
+.page-header__title {
+  grid-area: title;
+  font-size: 2rem;
+  font-weight: lighter;
+}
+
 .alert {
   grid-area: alert;
   padding: 10px;
@@ -313,9 +313,6 @@ body.theme-night {
 .card__item--temp {
   font-size: 2rem;
 }
-.card__item--temp {
-  font-size: 2rem;
-}
 .card__subtitle {
   font-weight: normal;
 }
@@ -361,7 +358,7 @@ body.theme-night {
   }
 }
 @media (width >= 900px) {
-  .card--day:not(.active) .card__item--time, .card--day:not(.active) .card__item--wind, .card--day:not(.active) .card__item--humidity, .card--day:not(.active) .card__item--pressure {
+  .card--day:not(.active) .card__item--humidity, .card--day:not(.active) .card__item--pressure, .card--day:not(.active) .card__item--time, .card--day:not(.active) .card__item--wind {
     display: none;
   }
   .card--day:not(.active) .card__item--icon {

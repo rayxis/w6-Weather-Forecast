@@ -6,15 +6,14 @@
 	display:               grid;
 	position:              relative;
 
-	@media (width <= values.$media-desktop) {
-		flex: 1 0 100%;
-	}
+	@media (width <= values.$media-desktop) { flex: 1 0 100%; }
 
 	grid-template-areas:
 		".input input button."
 		".label label . ."
 		".options options . .";
 
+	// Keep the search input within a certain range to keep it functional. The button should be 50px.
 	grid-template-columns: auto auto minmax(340px, 500px) values.$size-xlarge auto;
 
 	// Set the transition time for transformations.
@@ -28,6 +27,7 @@
 		}
 	}
 
+	// The Go button and search field
 	&__button,
 	&__input {
 		padding:    values.$size-medium;
@@ -45,7 +45,7 @@
 
 		border-radius: 0 values.$border-radius-large values.$border-radius-large 0;
 
-		&:hover {box-shadow: inset values.$shadow-medium, values.$shadow-small;}
+		&:hover { box-shadow: inset values.$shadow-medium, values.$shadow-small; }
 	}
 
 	// The search field
@@ -66,16 +66,13 @@
 		text-align: center;
 	}
 
+	// Location history list, and multiple-choice location list
 	&__list,
 	&__list--options {
 		display: flex;
 
-		@media (width >= values.$media-desktop) {
-			flex-wrap: nowrap;
-		}
-		@media (width < values.$media-desktop) {
-			flex-wrap: wrap;
-		}
+		@media (width >= values.$media-desktop) { flex-wrap: nowrap; }
+		@media (width < values.$media-desktop) { flex-wrap: wrap; }
 	}
 
 	// Location history list
@@ -105,7 +102,8 @@
 		border-radius:    values.$border-radius-medium;
 		box-shadow:       values.$shadow-large;
 
-		&:empty {display: none;}
+		// The .u-hide-empty class wasn't working here.
+		&:empty { display: none; }
 	}
 }
 
@@ -122,6 +120,7 @@
 	padding:            values.$size-small;
 	padding-left:       values.$size-medium;
 
+	// Mobile screen size, keep the location box half the screen size.
 	@media (width < values.$media-desktop) {
 		width: 50%;
 	}
@@ -140,23 +139,21 @@
 
 	// List item fields
 	.search__desc {
+		// City name
 		&--city {
 			grid-area:    city;
 			font-size:    values.$font-size-medium;
 			font-variant: small-caps;
 		}
 
+		// Conditions (icon description)
 		&--conditions {
 			grid-area:  conditions;
 			font-size:  values.$font-size-small;
 			text-align: center;
 		}
 
-		&--stco {
-			grid-area: stco;
-			font-size: values.$font-size-small;
-		}
-
+		// Coordinates
 		&--coords {
 			grid-area:   coordinates;
 			font-size:   values.$font-size-small;
@@ -164,6 +161,7 @@
 			font-weight: lighter;
 		}
 
+		// Icon
 		&--icon {
 			grid-area:  icon;
 			position:   relative;
@@ -173,10 +171,13 @@
 			filter:     drop-shadow(values.$shadow-small);
 		}
 
+		// State, Country
 		&--stco {
 			grid-area: state;
+			font-size: values.$font-size-small;
 		}
 
+		// Temperature
 		&--temp {
 			grid-area:    temp;
 			padding-left: values.$size-medium;
@@ -196,14 +197,10 @@
 	transition:      values.$transition-transform;
 
 	// First list item: top 2 borders round
-	&:first-of-type {
-		border-radius: values.$border-radius-medium values.$border-radius-medium 0 0;
-	}
+	&:first-of-type { border-radius: values.$border-radius-medium values.$border-radius-medium 0 0; }
 
 	// Last list item: button 2 borders round
-	&:last-of-type {
-		border-radius: 0 0 values.$border-radius-medium values.$border-radius-medium;
-	}
+	&:last-of-type { border-radius: 0 0 values.$border-radius-medium values.$border-radius-medium; }
 
 	// When each list item is hovered over.
 	&:hover {
@@ -216,12 +213,13 @@
 		align-self: center;
 		width:      calc(100% / 3);
 
-		&--city {}
+		// City
+		&--city { font-size: values.$font-size-medium-small; }
 
-		&--stco {
-			font-size: values.$font-size-small;
-		}
+		// State, Country
+		&--stco { font-size: values.$font-size-small; }
 
+		// Coordinates
 		&--coords {
 			font-size:   values.$font-size-tiny;
 			font-weight: lighter;

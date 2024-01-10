@@ -1,6 +1,7 @@
 @use "../values";
 
-html {min-width: 400px;}
+// Set a minimum width of 400px for the website.
+html { min-width: 400px; }
 
 body {
 	position:         relative;
@@ -12,9 +13,11 @@ body {
 	color:            values.$color-text;
 	transition:       values.$transition-bg-color-long;
 
-	&.theme-night {background-color: values.$color-bg-main-night;}
+	// Create the night theme for the site's background.
+	&.theme-night { background-color: values.$color-bg-main-night; }
 }
 
+// Page footer isn't big enough to separate.
 .page-footer {
 	padding:     values.$size-small;
 	font-family: values.$font-main;
@@ -26,10 +29,9 @@ body {
 /***
  * Utility classes
  */
-.u-clickable {
-	cursor: pointer;
-}
+.u-clickable { cursor: pointer; }
 
+// The current location target icon
 .u-current-location {
 	.search__desc--coords::before {
 		content:           "";
@@ -43,6 +45,5 @@ body {
 	}
 }
 
-.u-hide-empty:empty {
-	display: none;
-}
+// Hide empty elements
+.u-hide-empty:empty { display: none; }
