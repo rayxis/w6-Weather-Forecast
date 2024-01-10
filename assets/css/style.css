@@ -76,7 +76,7 @@
   width: 100%;
   padding: 5px;
   list-style: none;
-  background-color: rgba(0, 0, 0, 0.6);
+  background-color: rgba(0, 0, 0, 0.7);
   border-radius: 10px;
   box-shadow: 0 10px 10px rgba(0, 0, 0, 0.3);
 }
@@ -176,6 +176,7 @@
   display: flex;
   flex-flow: column nowrap;
   align-items: flex-end;
+  margin-left: auto;
 }
 .settings__item {
   margin: 4px;
@@ -518,6 +519,36 @@ body.theme-night {
 }
 .weather__location {
   grid-area: location;
+  display: flex;
+}
+.weather__location-container {
+  display: flex;
+  flex-flow: column nowrap;
+  width: auto;
+  height: 100%;
+}
+@media (width >= 900px) {
+  .weather__location-container {
+    justify-content: flex-start;
+  }
+}
+@media (width < 900px) {
+  .weather__location-container {
+    justify-content: space-between;
+  }
+}
+.weather__location .weather__item--city {
+  font-size: 3rem;
+}
+.weather__location .weather__item--stco {
+  font-size: 1rem;
+  text-align: end;
+  text-transform: uppercase;
+}
+.weather__location .weather__item--coords {
+  font-size: 0.7rem;
+  font-weight: lighter;
+  text-align: end;
 }
 .weather__temperature-information {
   grid-area: temp;
@@ -530,7 +561,7 @@ body.theme-night {
 }
 .weather__time-information .weather__item {
   padding: 10px;
-  background-color: rgba(0, 0, 0, 0.6);
+  background-color: rgba(0, 0, 0, 0.7);
   border-radius: 10px;
   box-shadow: 0 3px 3px rgba(0, 0, 0, 0.3);
 }
@@ -546,9 +577,6 @@ body.theme-night {
 }
 .weather__item--icon {
   height: 100px;
-}
-.weather__item--location {
-  font-size: 3rem;
 }
 .weather__item--temp {
   font-size: 3rem;

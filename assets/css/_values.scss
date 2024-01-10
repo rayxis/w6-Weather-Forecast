@@ -1,47 +1,55 @@
-$color-shadow:           rgba(0, 0, 0, 0.3);
-$color-border:           rgba(0, 0, 0, 0.2);
-$color-bg-alert:         rgba(255, 0, 0, 0.6);
-$color-bg-dark:          rgba(0, 0, 0, 0.6);
-$color-bg-light:         rgba(0, 0, 0, 0.3);
-$color-bg-main-day:      deepskyblue;
-$color-bg-main-night:    midnightblue;
-$color-text:             white;
+// Colors
+$color-shadow:             rgba(0, 0, 0, 0.3);
+$color-border:             rgba(0, 0, 0, 0.2);
+$color-bg-alert:           rgba(255, 0, 0, 0.6);
+$color-bg-dark:            rgba(0, 0, 0, 0.7);
+$color-bg-hover:           rgba(255, 255, 255, 0.5);
+$color-bg-light:           rgba(0, 0, 0, 0.3);
+$color-bg-main-day:        deepskyblue;
+$color-bg-main-night:      midnightblue;
+$color-text:               white;
 
-$border:                 1px solid $color-border;
-$border-radius-large:    15px;
-$border-radius-medium:   10px;
-$border-radius-small:    5px;
+// Borders
+$border:                   1px solid $color-border;
+$border-radius-large:      15px;
+$border-radius-medium:     10px;
+$border-radius-small:      5px;
 
-$font-main:              Oswald, sans-serif;
-$font-size-xlarge:       3rem;
-$font-size-large:        2rem;
-$font-size-medium-large: 1.5rem;
-$font-size-medium:       1rem;
-$font-size-medium-small: 0.9rem;
-$font-size-small:        0.7rem;
-$font-size-tiny:         0.6rem;
+// Fonts
+$font-main:                Oswald, sans-serif;
+$font-size-xlarge:         3rem;
+$font-size-large:          2rem;
+$font-size-medium-large:   1.5rem;
+$font-size-medium:         1rem;
+$font-size-medium-small:   0.9rem;
+$font-size-small:          0.7rem;
+$font-size-tiny:           0.6rem;
 
-$media-desktop:          900px;
+// Media
+$media-desktop:            900px;
 
-$shadow-none:            0 0 0 $color-shadow;
-$shadow-small:           0 3px 3px $color-shadow;
-$shadow-medium:          0 5px 5px $color-shadow;
-$shadow-large:           0 10px 10px $color-shadow;
+// Shadows (box-shadow, text-shadow, and filter: drop-shadow())
+$shadow-none:              0 0 0 $color-shadow;
+$shadow-small:             0 3px 3px $color-shadow;
+$shadow-medium:            0 5px 5px $color-shadow;
+$shadow-large:             0 10px 10px $color-shadow;
 
-$size-xlarge:            50px;
-$size-large:             25px;
-$size-medium-large:      15px;
-$size-medium:            10px;
-$size-small:             5px;
-$size-xsmall:            4px;
+// Sizing
+$size-xlarge:              50px;
+$size-large:               25px;
+$size-medium-large:        15px;
+$size-medium:              10px;
+$size-small:               5px;
+$size-xsmall:              4px;
 
-$transition-transform:   transform .25s ease;
-$transition-bg-color:    background-color .25s ease;
-$transition-box-shadow:  box-shadow .25s ease;
-$transition-text-shadow: text-shadow .25s ease;
+// Transitions
+$transition-transform:     transform .25s ease;
+$transition-bg-color:      background-color .25s ease;
+$transition-bg-color-long: background-color 1s ease;
+$transition-box-shadow:    box-shadow .25s ease;
+$transition-text-shadow:   text-shadow .25s ease;
 
-$hover-bg-color:         rgba(255, 255, 255, 0.5);
-
+// Reset
 * {
 	margin:     0;
 	padding:    0;

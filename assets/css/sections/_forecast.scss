@@ -59,7 +59,7 @@
 			align-items: center;
 
 			&:hover {
-				background-color: values.$hover-bg-color;
+				background-color: values.$color-bg-hover;
 				transform:        scale(1.1);
 			}
 			@media (width >= values.$media-desktop) {
@@ -266,7 +266,40 @@
 		}
 	}
 
-	&__location {grid-area: location;}
+	&__location {
+		grid-area: location;
+		display:   flex;
+
+		&-container {
+			display:   flex;
+			flex-flow: column nowrap;
+			width:     auto;
+			height:    100%;
+
+			@media (width >= values.$media-desktop) {
+				justify-content: flex-start;
+			}
+			@media (width < values.$media-desktop) {
+				justify-content: space-between;
+			}
+		}
+
+		.weather__item {
+			&--city {
+				font-size: values.$font-size-xlarge;
+			}
+			&--stco {
+				font-size:      values.$font-size-medium;
+				text-align:     end;
+				text-transform: uppercase;
+			}
+			&--coords {
+				font-size:   values.$font-size-small;
+				font-weight: lighter;
+				text-align:  end;
+			}
+		}
+	}
 	&__temperature-information {grid-area: temp;}
 
 	&__time-information {
@@ -303,7 +336,6 @@
 			height: 100px;
 		}
 		&--location {
-			font-size: values.$font-size-xlarge;
 		}
 		&--temp {
 			font-size: values.$font-size-xlarge;

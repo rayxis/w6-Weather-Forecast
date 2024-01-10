@@ -132,7 +132,7 @@
 	                    values.$transition-transform;
 
 	&:hover {
-		background-color: values.$hover-bg-color;
+		background-color: values.$color-bg-hover;
 		box-shadow:       values.$shadow-medium;
 		transform:        scale(1.1);
 	}
@@ -207,7 +207,7 @@
 
 	// When each list item is hovered over.
 	&:hover {
-		background-color: values.$hover-bg-color;
+		background-color: values.$color-bg-hover;
 		transform:        scale(1.02);
 	}
 
