@@ -74,6 +74,7 @@
   position: absolute;
   top: -1rem;
   width: 100%;
+  z-index: 1;
   padding: 5px;
   list-style: none;
   background-color: rgba(0, 0, 0, 0.7);
@@ -129,7 +130,6 @@
   position: relative;
   height: 100%;
   object-fit: contain;
-  z-index: -1;
   filter: drop-shadow(0 3px 3px rgba(0, 0, 0, 0.3));
 }
 .search__item .search__desc--stco {
@@ -266,7 +266,7 @@ body {
   font-size: 88%;
   background-color: deepskyblue;
   color: white;
-  transition: background-color 0.25s ease;
+  transition: background-color 1s ease;
 }
 body.theme-night {
   background-color: midnightblue;

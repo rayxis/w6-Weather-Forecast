@@ -96,6 +96,7 @@
 		position:         absolute;
 		top:              -1rem;
 		width:            100%;
+		z-index: 1;
 
 		padding:          values.$size-small;
 
@@ -168,7 +169,6 @@
 			position:   relative;
 			height:     100%;
 			object-fit: contain;
-			z-index:    -1; // Fixes jumping through .search_options
 
 			filter:     drop-shadow(values.$shadow-small);
 		}

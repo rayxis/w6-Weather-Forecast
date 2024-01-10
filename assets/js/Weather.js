@@ -1,8 +1,4 @@
-/***
- TODO:
-	    Readme (description and screenshots)
-	    Limit history, or delete items
- ***/
+// Add the UTC plugin to dayjs for timezone data.
 dayjs.extend(window.dayjs_plugin_utc);
 
 class Weather {
@@ -16,12 +12,13 @@ class Weather {
 	};
 	//  Data storage
 	data      = {
-		apiKey:          '',       // The API key is filled by the class' constructor.
-		cacheLoaded:     false,    // Flag for if the page has loaded all the cached data.
-		currentLocation: [],       // The user's current location (if there is one).
-		functions:       {},       // Event handler function storage
-		location:        [],       // Location object storage
-		numberFormat:    undefined // Number formatting for different locales.
+		apiKey:          '',        // The API key is filled by the class' constructor.
+		cacheLoaded:     false,     // Flag for if the page has loaded all the cached data.
+		currentLocation: [],        // The user's current location (if there is one).
+		functions:       {},        // Event handler function storage
+		language:        undefined, // The current language object data.
+		location:        [],        // Location object storage
+		numberFormat:    undefined  // Number formatting for different locales.
 	};
 	//  Element references
 	elements  = {
@@ -51,20 +48,20 @@ class Weather {
 	};
 	//  Settings
 	settings  = {
-		coordPrecision:    2,    // Decimal Precision for coordinates (.1 = 11.1km, .01 = 1.11km)
-		distancePrecision: 2,    // Distance conversion function precision.
-		cacheForecastExp:  3 * 60 * 60 * 1000, // In milliseconds [3 hours].
-		cacheLocation:     'locationData',     // Cache location name for localStorage.
-		cacheSettings:     'settingsData',     // Cache settings name for localStorage.
-		cacheWeatherExp:   60 * 60 * 1000,     // In milliseconds [1 hour].
-		clockDateFormat:   'D MMMM YYYY',      // Clock Date Format
-		clockTimeFormat:   'h:mm a',           // Clock Time Format
-		geoLimit:          5,    // Maximum location options from OpenWeatherMaps is 5.
-		gpsMaxAge:         15 * 60 * 1000,     // Maximum GPS cache time (in milliseconds) [15 min]
-		language:          undefined,
-		iconURL:           'https://openweathermap.org/img/wn/', // URL for OpenWeather's icons.
-		similarPrecision:  .1,   // Difference in distance for two places with the names to be considered the same
-	                             // place.
+		coordPrecision:       2,    // Decimal Precision for coordinates (.1 = 11.1km, .01 = 1.11km)
+		distancePrecision:    2,    // Distance conversion function precision.
+		cacheForecastExp:     3 * 60 * 60 * 1000, // In milliseconds [3 hours].
+		cacheLocation:        'locationData',     // Cache location name for localStorage.
+		cacheSettings:        'settingsData',     // Cache settings name for localStorage.
+		cacheWeatherExp:      60 * 60 * 1000,     // In milliseconds [1 hour].
+		clockDateFormat:      'D MMMM YYYY',      // Clock Date Format
+		clockTimeFormat:      'h:mm a',           // Clock Time Format
+		geoLimit:             5,    // Maximum location options from OpenWeatherMaps is 5.
+		gpsMaxAge:            15 * 60 * 1000,     // Maximum GPS cache time (in milliseconds) [15 min]
+		locationHistoryLimit: 6,    // Limit the amount of locations to be stored in the history.
+		iconURL:              'https://openweathermap.org/img/wn/', // URL for OpenWeather's icons.
+		similarPrecision:     .1,   // Difference in distance for two places with the names to be considered the same
+	                                // place.
 		tempPrecision: 2,    // Decimal precision for temperature.
 		units:         {
 			imperial:   {
@@ -105,14 +102,12 @@ class Weather {
 		// Look up user's current location.
 
 		// Set the language from settings, or falling back to the browser's detected language, defaulting to English.
-		this.languageSet(this.settings.language || this.languages[navigator.language] || this.languages['en-US']);
+		this.languageSet(this.data.language || this.languages[navigator.language] || this.languages['en-US']);
 
+		// Loading the cache first makes sure that locationCurrent() does not truncate the array to just the return.
+		this.apiCacheLoad('location', true);
 		// Attempt to get the current location, and then load the cache. This is so this.data.currentLocation is
 		// available for testing during the object rebuilds.
-
-		// TODO: If apiCacheLoad() is in .then(), it deletes every other location. If it's outside, there's no location
-		// check. What if I run it twice? Figure this out.
-		this.apiCacheLoad('location', true);
 		this.locationCurrent().then(() => this.apiCacheLoad('location'));
 
 		// Clock
@@ -595,7 +590,7 @@ class Weather {
 		document.querySelector(`script[src="${language.dayjs}"]`)?.remove();
 
 		// Set the current language and number format, then save the settings.
-		this.settings.language = language;
+		this.data.language = language;
 		this.data.numberFormat = new Intl.NumberFormat(language.locale);
 		this.apiCacheSave('settings');
 
@@ -627,7 +622,7 @@ class Weather {
 	languageText(key, subKey) {
 		try {
 			// Return the language text.
-			return this.settings.language[key][subKey];
+			return this.data.language[key][subKey];
 		} catch (error) {
 			this.alertUser('Missing language settings.');
 		}
@@ -668,8 +663,14 @@ class Weather {
 		};
 
 		// Save the location object in the location data array.
-		// If the location is new, push it to the array. If it was previously saved, overwrite the location.
-		if (existingIndex < 0) this.data.location.push(location);
+		// If the location is new, put it at the front of the array and check if the array is maxed out.
+		if (existingIndex < 0) {
+			this.data.location.unshift(location);
+			// If the array has reached the limit, pop the last item (oldest access) off the array.
+			if (this.data.location.length > this.settings.locationHistoryLimit)
+				this.data.location.pop();
+		}
+		// If the location was previously saved, overwrite it.
 		else this.data.location[existingIndex] = location;
 
 		// If there is a zipcode without a state, run the lat/lon pair through the API again.
@@ -1067,8 +1068,14 @@ class Weather {
 		return clockElement;
 	}
 
+	// Stop the timer on the clock.
 	clockStop(clockElement) {
+		// If the clock doesn't exist, there's nothing to do.
+		if (!clockElement.clock) return false;
+
+		// Clear the clock counter.
 		clearInterval(clockElement.clock);
+		return true;
 	}
 
 	themeChangeDayNight(locationData) {

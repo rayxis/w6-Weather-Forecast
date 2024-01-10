@@ -10,7 +10,7 @@ body {
 
 	background-color: values.$color-bg-main-day;
 	color:            values.$color-text;
-	transition:       values.$transition-bg-color;
+	transition:       values.$transition-bg-color-long;
 
 	&.theme-night {background-color: values.$color-bg-main-night;}
 }
