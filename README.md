@@ -163,3 +163,6 @@ A live version of this application can be seen here: https://rayxis.github.io/w6
 * Paul McCaughtry helped with the idea to use a separate array to compare duplicate return cities from the
   OpenWeatherMap API.
 * Borrowed and refactored event listener code that I made in a previous personal project (VRA Moderation Tool, Think).
+* For the convertCoords() function, I came up with most of the array and math down myself, but I had a different number
+  in the denominator which wasn't working. The credit for that goes a comment by Edward Bray on Stack Exchange
+  to https://stackoverflow.com/questions/7490660/converting-wind-direction-in-angles-to-text-words/.
