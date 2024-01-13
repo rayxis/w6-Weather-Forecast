@@ -177,6 +177,7 @@ class Weather {
 					this.data.location.forEach(location => this.locationRebuild(location, true, cacheSave));
 					break;
 				case 'settings':
+					// Parse the returned settings object from localStorage if it exists; else default settings values.
 					this.settings = JSON.parse(localStorage.getItem(this.settings.cacheSettings)) ?? this.settings;
 					break;
 				default:
@@ -237,11 +238,14 @@ class Weather {
 		} else return objectBuild(apiData);
 	}
 
+	// Build the data structure for (add functions to) weather / forecast objects.
 	apiDataRebuild(apiData) {
 		apiData.getTemp       = (key, precision = undefined) => {
+			// Return the converted temperature
 			return this.convertTemp(apiData.temp[key], precision);
 		};
 		apiData.getVisibility = () => {
+			// Return the converted visibility distance (default is in kilometers)
 			return this.convertDistance(apiData.visibility);
 		};
 		apiData.getWind       = key => {
@@ -590,7 +594,7 @@ class Weather {
 		document.querySelector(`script[src="${language.dayjs}"]`)?.remove();
 
 		// Set the current language and number format, then save the settings.
-		this.data.language = language;
+		this.data.language     = language;
 		this.data.numberFormat = new Intl.NumberFormat(language.locale);
 		this.apiCacheSave('settings');
 
@@ -695,9 +699,7 @@ class Weather {
 				// If permission was not granted, alert them of the error and log it.
 				console.error('locationCurrent failure:', error);
 				this.alertUser('currentLocation');
-			}, {
-				                                         maximumAge: this.settings.gpsMaxAge
-			                                         });
+			}, { maximumAge: this.settings.gpsMaxAge });
 		});
 	}
 
@@ -1031,7 +1033,7 @@ class Weather {
 
 		// Load the error message from languages.js, and append the message to the page header.
 		alertElement.firstElementChild.textContent = this.languageText('errors', message);
-		alertElement.lastElementChild.textContent = this.languageText('text', 'alertClose');
+		alertElement.lastElementChild.textContent  = this.languageText('text', 'alertClose');
 		this.elements.pageHeader.insertBefore(alertElement, this.elements.pageHeader.lastElementChild);
 
 		//  Set the message as active.
